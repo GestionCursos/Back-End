@@ -15,6 +15,7 @@ import { CertificadoModule } from './certificado/certificado.module';
 import { UsuarioModule } from './usuario/usuario.module';
 import { InscripcionModule } from './inscripcion/inscripcion.module';
 import { AsistenciaModule } from './asistencia/asistencia.module';
+
 @Module({
   imports: [FirebaseModule, ContenidoHomeModule, AutoridadesModule, SeccionesModule, RequisitoModule, RequisitoEventoModule, RequisitoInscripcionModule, EventoModule, OrganizadorModule, NotaModule, CertificadoModule, UsuarioModule, InscripcionModule, AsistenciaModule],
   controllers: [AppController],
