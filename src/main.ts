@@ -7,7 +7,7 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
   const firebaseGuard = app.get(FirebaseGuard);
-  app.useGlobalGuards(firebaseGuard);
+//  app.useGlobalGuards(firebaseGuard);
   app.useGlobalPipes(new ValidationPipe({
     transform: true,
     whitelist: true,
