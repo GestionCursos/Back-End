@@ -33,5 +33,15 @@ export class FirebaseService {
         }
     }
 
+    //funcion para validar el token de firebase
+       async verifyIdToken(idToken: string) {
+        try {
+            const decodedToken = await admin.auth().verifyIdToken(idToken);
+            return decodedToken;
+        } catch (error) {
+            throw new UnauthorizedException('Invalid token');
+        }
+    }
+
 
 }
