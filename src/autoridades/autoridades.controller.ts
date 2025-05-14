@@ -1,0 +1,34 @@
+import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { AutoridadesService } from './autoridades.service';
+import { CreateAutoridadeDto } from './dto/create-autoridade.dto';
+import { UpdateAutoridadeDto } from './dto/update-autoridade.dto';
+
+@Controller('autoridades')
+export class AutoridadesController {
+  constructor(private readonly autoridadesService: AutoridadesService) {}
+
+  @Post()
+  create(@Body() createAutoridadeDto: CreateAutoridadeDto) {
+    return this.autoridadesService.create(createAutoridadeDto);
+  }
+
+  @Get()
+  findAll() {
+    return this.autoridadesService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.autoridadesService.findOne(+id);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateAutoridadeDto: UpdateAutoridadeDto) {
+    return this.autoridadesService.update(+id, updateAutoridadeDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.autoridadesService.remove(+id);
+  }
+}
