@@ -23,8 +23,8 @@ export class ContenidoHomeController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateContenidoHomeDto: UpdateContenidoHomeDto) {
-    return this.contenidoHomeService.update(+id, updateContenidoHomeDto);
+  update(@Param('id') id: number, @Body() updateContenidoHomeDto: UpdateContenidoHomeDto) {
+    return this.contenidoHomeService.update(id, updateContenidoHomeDto);
   }
 
   @Delete(':id')

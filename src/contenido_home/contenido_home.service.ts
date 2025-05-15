@@ -26,8 +26,9 @@ export class ContenidoHomeService {
     return `This action returns a #${id} contenidoHome`;
   }
 
-  update(id: number, updateContenidoHomeDto: UpdateContenidoHomeDto) {
-    return `This action updates a #${id} contenidoHome`;
+  async update(id: number, updateContenidoHomeDto: UpdateContenidoHomeDto) {
+    const contendidoModificado= await this.contenidoHomeRepository.update(id,updateContenidoHomeDto);
+    return contendidoModificado;
   }
 
   remove(id: number) {
