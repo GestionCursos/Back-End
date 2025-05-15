@@ -18,19 +18,20 @@ export class ContenidoHomeService {
     return contenidoGuardado;
   }
 
-  findAll() {
-    return `This action returns all contenidoHome`;
+  async findAll() {
+    const listaDeContenidos = await this.contenidoHomeRepository.find();
+    return listaDeContenidos;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} contenidoHome`;
+
+
+  async update(id: number, updateContenidoHomeDto: UpdateContenidoHomeDto) {
+    const contendidoModificado = await this.contenidoHomeRepository.update(
+      id,
+      updateContenidoHomeDto,
+    );
+    return contendidoModificado;
   }
 
-  update(id: number, updateContenidoHomeDto: UpdateContenidoHomeDto) {
-    return `This action updates a #${id} contenidoHome`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} contenidoHome`;
-  }
+  
 }
