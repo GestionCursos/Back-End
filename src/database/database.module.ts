@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ConfigModule } from "@nestjs/config";
 import { Usuario } from "src/usuario/entities/usuario.entity";
+import { Autoridade } from "src/autoridades/entities/autoridade.entity";
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { Usuario } from "src/usuario/entities/usuario.entity";
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME, 
-    entities: [Usuario],
+    entities: [Usuario,Autoridade],
     synchronize: true,      
     ssl: {
         rejectUnauthorized: false,
