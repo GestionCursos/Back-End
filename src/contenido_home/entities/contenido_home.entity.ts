@@ -1,8 +1,8 @@
-import { Column, Entity, PrimaryColumn } from "typeorm";
+import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 @Entity("contenido_home")
 export class ContenidoHome {
-    @PrimaryColumn()
-    id_contenido: number;
+    @PrimaryGeneratedColumn()
+    id_contenido?: number;
     @Column()
     titulo: string;
     @Column()
