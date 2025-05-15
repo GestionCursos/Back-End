@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { ContenidoHomeService } from './contenido_home.service';
 import { CreateContenidoHomeDto } from './dto/create-contenido_home.dto';
 import { UpdateContenidoHomeDto } from './dto/update-contenido_home.dto';
@@ -17,18 +25,11 @@ export class ContenidoHomeController {
     return this.contenidoHomeService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.contenidoHomeService.findOne(+id);
-  }
-
   @Patch(':id')
-  update(@Param('id') id: number, @Body() updateContenidoHomeDto: UpdateContenidoHomeDto) {
+  update(
+    @Param('id') id: number,
+    @Body() updateContenidoHomeDto: UpdateContenidoHomeDto,
+  ) {
     return this.contenidoHomeService.update(id, updateContenidoHomeDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.contenidoHomeService.remove(+id);
   }
 }
