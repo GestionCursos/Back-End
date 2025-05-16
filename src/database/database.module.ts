@@ -3,6 +3,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { ConfigModule } from "@nestjs/config";
 import { Usuario } from "src/usuario/entities/usuario.entity";
 import { ContenidoHome } from "src/contenido_home/entities/contenido_home.entity";
+import { Organizador } from "src/organizador/entities/organizador.entity";
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { ContenidoHome } from "src/contenido_home/entities/contenido_home.entity
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME, 
-    entities: [Usuario,ContenidoHome],
+    entities: [Usuario,ContenidoHome,Organizador],
     synchronize: true,      
     ssl: {
         rejectUnauthorized: false,
