@@ -17,18 +17,9 @@ export class OrganizadorController {
     return this.organizadorService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.organizadorService.findOne(+id);
-  }
-
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateOrganizadorDto: UpdateOrganizadorDto) {
     return this.organizadorService.update(+id, updateOrganizadorDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.organizadorService.remove(+id);
-  }
 }
