@@ -4,6 +4,7 @@ import { ConfigModule } from "@nestjs/config";
 import { Usuario } from "src/usuario/entities/usuario.entity";
 import { ContenidoHome } from "src/contenido_home/entities/contenido_home.entity";
 import { Organizador } from "src/organizador/entities/organizador.entity";
+import { Evento } from "src/evento/entities/evento.entity";
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { Organizador } from "src/organizador/entities/organizador.entity";
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME, 
-    entities: [Usuario,ContenidoHome,Organizador],
+    entities: [Usuario,ContenidoHome,Organizador,Evento],
     synchronize: true,      
     ssl: {
         rejectUnauthorized: false,
