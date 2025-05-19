@@ -1,4 +1,4 @@
-import { IsBoolean, IsDateString, IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsBoolean, IsDateString, IsNotEmpty, IsNumber, IsString, Min } from "class-validator";
 
 export class CreateEventoDto {
     @IsString()
@@ -34,7 +34,6 @@ export class CreateEventoDto {
     @IsString()
     @IsNotEmpty()
     urlFoto: string;
-    //agregar relacion de uno a muchos con secciones
     @IsBoolean()
     @IsNotEmpty()
     visible: boolean;
@@ -44,4 +43,8 @@ export class CreateEventoDto {
     @IsNumber()
     @IsNotEmpty()
     idOrganizador: number;
+    @IsNumber()
+    @IsNotEmpty()
+    @Min(1)
+    idSeeccion:number
 }

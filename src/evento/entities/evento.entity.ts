@@ -1,6 +1,6 @@
 import { Organizador } from "src/organizador/entities/organizador.entity";
 import { Seccione } from "src/secciones/entities/seccione.entity";
-import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, DeleteDateColumn, Entity, JoinColumn, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity("Eventos")
 export class Evento {
@@ -28,7 +28,6 @@ export class Evento {
     requiereAsistencia: boolean;
     @Column({name:"url_foto"})
     urlFoto:string;
-    //agregar relacion de uno a muchos con secciones
     @Column()
     visible:boolean;
     @Column()
@@ -36,4 +35,11 @@ export class Evento {
     @ManyToOne(()=>Organizador,(organizador)=>organizador.id)
     @JoinColumn({name:"id_organizador"})
     idOrganizador:Organizador;
+
+    @ManyToOne(()=>Seccione,(seccion)=>seccion.id_seccion)
+    @JoinColumn({name:"id_seccion"})
+    idSeccion:Seccione;
+    @DeleteDateColumn({ name: 'fecha_eliminacion', nullable: true ,default:null})
+    fechaEliminacion?: Date;
+
 }
