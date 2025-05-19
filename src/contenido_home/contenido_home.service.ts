@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateContenidoHomeDto } from './dto/create-contenido_home.dto';
 import { UpdateContenidoHomeDto } from './dto/update-contenido_home.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -15,6 +15,7 @@ export class ContenidoHomeService {
     const contenidoGuardado = await this.contenidoHomeRepository.save(
       createContenidoHomeDto,
     );
+    if(!contenidoGuardado) throw new  NotFoundException("El contenido no se pudo guardar");
     return contenidoGuardado;
   }
 
@@ -30,6 +31,7 @@ export class ContenidoHomeService {
       id,
       updateContenidoHomeDto,
     );
+    if(!contendidoModificado) throw new  NotFoundException("El contenido no se pudo actualizar");
     return contendidoModificado;
   }
 
