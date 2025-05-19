@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateContenidoHomeDto } from './dto/create-contenido_home.dto';
 import { UpdateContenidoHomeDto } from './dto/update-contenido_home.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -15,22 +15,25 @@ export class ContenidoHomeService {
     const contenidoGuardado = await this.contenidoHomeRepository.save(
       createContenidoHomeDto,
     );
+    if(!contenidoGuardado) throw new  NotFoundException("El contenido no se pudo guardar");
     return contenidoGuardado;
   }
 
-  findAll() {
-    return `This action returns all contenidoHome`;
+  async findAll() {
+    const listaDeContenidos = await this.contenidoHomeRepository.find();
+    return listaDeContenidos;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} contenidoHome`;
+
+
+  async update(id: number, updateContenidoHomeDto: UpdateContenidoHomeDto) {
+    const contendidoModificado = await this.contenidoHomeRepository.update(
+      id,
+      updateContenidoHomeDto,
+    );
+    if(!contendidoModificado) throw new  NotFoundException("El contenido no se pudo actualizar");
+    return contendidoModificado;
   }
 
-  update(id: number, updateContenidoHomeDto: UpdateContenidoHomeDto) {
-    return `This action updates a #${id} contenidoHome`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} contenidoHome`;
-  }
+  
 }
