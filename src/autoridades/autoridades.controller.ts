@@ -17,18 +17,15 @@ export class AutoridadesController {
     return this.autoridadesService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.autoridadesService.findOne(+id);
-  }
+ 
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAutoridadeDto: UpdateAutoridadeDto) {
-    return this.autoridadesService.update(+id, updateAutoridadeDto);
+  update(@Param('id') id: number, @Body() updateAutoridadeDto: UpdateAutoridadeDto) {
+    return this.autoridadesService.update(id, updateAutoridadeDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.autoridadesService.remove(+id);
+  remove(@Param('id') id: number) {
+    return this.autoridadesService.remove(id);
   }
 }
