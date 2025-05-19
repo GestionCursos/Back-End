@@ -1,26 +1,38 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateSeccioneDto } from './dto/create-seccione.dto';
 import { UpdateSeccioneDto } from './dto/update-seccione.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Seccione } from './entities/seccione.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class SeccionesService {
-  create(createSeccioneDto: CreateSeccioneDto) {
-    return 'This action adds a new seccione';
+  constructor(
+    @InjectRepository(Seccione)
+    private seccioneRepositiry: Repository<Seccione>,
+  ) {}
+  async create(createSeccioneDto: CreateSeccioneDto) {
+    const guardarSeccion =
+    await this.seccioneRepositiry.save(createSeccioneDto);
+     if(!guardarSeccion) throw new  NotFoundException("La seccion no se pudo guardar");  
+    return guardarSeccion;
   }
 
-  findAll() {
-    return `This action returns all secciones`;
+  async findAll() {
+    const listaSecciones= await this.seccioneRepositiry.find();
+    return listaSecciones;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} seccione`;
+  
+
+  async update(id: number, updateSeccioneDto: UpdateSeccioneDto) {
+    const seccionModificado= await this.seccioneRepositiry.update(id,updateSeccioneDto);
+    if(!seccionModificado) throw new  NotFoundException("La seccion no se pudo actualizar");
+    return seccionModificado;
   }
 
-  update(id: number, updateSeccioneDto: UpdateSeccioneDto) {
-    return `This action updates a #${id} seccione`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} seccione`;
+  async remove(id: number) {
+     await this.seccioneRepositiry.delete(id);
+    return true ;
   }
 }
