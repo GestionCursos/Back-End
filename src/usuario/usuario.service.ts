@@ -19,18 +19,22 @@ export class UsuarioService {
   }
 
   findAll() {
-    return `This action returns all usuario`;
+    return this.usuarioRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} usuario`;
+  findOne(id: string) {
+    return this.usuarioRepository.findOne({ where: { uid_firebase: id } });
   }
 
-  update(id: number, updateUsuarioDto: UpdateUsuarioDto) {
-    return `This action updates a #${id} usuario`;
+  update(id: string, updateUsuarioDto: UpdateUsuarioDto) {
+    const upd = this.usuarioRepository.update({ uid_firebase: id }, updateUsuarioDto);
+    if (!upd) {
+      throw new Error('Usuario not found');
+    }
+    return true;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} usuario`;
+  remove(id: string) {
+    return this.usuarioRepository.softDelete({ uid_firebase: id });
   }
 }
