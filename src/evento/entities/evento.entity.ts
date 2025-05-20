@@ -1,6 +1,7 @@
+import { Facultad } from "src/facultad/entities/facultad.entity";
 import { Organizador } from "src/organizador/entities/organizador.entity";
 import { Seccione } from "src/secciones/entities/seccione.entity";
-import { Column, DeleteDateColumn, Entity, JoinColumn, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, DeleteDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity("Eventos")
 export class Evento {
@@ -41,5 +42,8 @@ export class Evento {
     idSeccion:Seccione;
     @DeleteDateColumn({ name: 'fecha_eliminacion', nullable: true ,default:null})
     fechaEliminacion?: Date;
+    @ManyToMany(() => Facultad, (facultad) => facultad.eventos)
+    @JoinTable() 
+    facultades: Facultad[];
 
 }

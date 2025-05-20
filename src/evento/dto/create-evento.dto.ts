@@ -1,4 +1,4 @@
-import { IsBoolean, IsDateString, IsNotEmpty, IsNumber, IsString, Min } from "class-validator";
+import { ArrayNotEmpty, IsArray, IsBoolean, IsDateString, IsNotEmpty, IsNumber, IsString, Min } from "class-validator";
 
 export class CreateEventoDto {
     @IsString()
@@ -16,7 +16,8 @@ export class CreateEventoDto {
     @IsString()
     @IsNotEmpty()
     modalidad: string;
-    @IsString()
+    @IsNumber()
+    @Min(0)
     @IsNotEmpty()
     costo: number;
     @IsString()
@@ -46,5 +47,9 @@ export class CreateEventoDto {
     @IsNumber()
     @IsNotEmpty()
     @Min(1)
-    idSeeccion:number
+    idSeeccion: number
+    @IsArray()
+    @ArrayNotEmpty()
+    @IsNumber({}, { each: true })
+    facultades: number[];
 }
