@@ -6,4 +6,16 @@ import { UpdateFacultadDto } from './dto/update-facultad.dto';
 @Controller('facultad')
 export class FacultadController {
   constructor(private readonly facultadService: FacultadService) { }
+  @Post()
+  create(@Body() createFacultadDto: CreateFacultadDto) {
+    return this.facultadService.create(createFacultadDto);
+  }
+  @Get()
+  findAll() {
+    return this.facultadService.findAll();
+  }
+  @Get(':id')
+  findOne(@Param('id') id: number) {
+    return this.facultadService.findOne(id);
+  }
 }
