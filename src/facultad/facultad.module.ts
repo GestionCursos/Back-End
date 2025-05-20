@@ -8,5 +8,6 @@ import { Facultad } from './entities/facultad.entity';
   imports: [TypeOrmModule.forFeature([Facultad])], 
   controllers: [FacultadController],
   providers: [FacultadService],
+  exports: [FacultadService], 
 })
 export class FacultadModule {}

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateFacultadDto } from './dto/create-facultad.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Facultad } from './entities/facultad.entity';
 
 @Injectable()
@@ -24,6 +24,11 @@ export class FacultadService {
     const nuevaFacultad = this.facultadRepository.create(createFacultadDto);
     await this.facultadRepository.save(nuevaFacultad);
     return nuevaFacultad;
+  }
+  async findByIds(ids: number[]) {
+    const facultades = await this.facultadRepository.find({where: { id: In(ids) }});
+    if (!facultades) throw new NotFoundException("No se encontraron facultades");
+    return facultades;
   }
 
 }
