@@ -31,4 +31,10 @@ export class OrganizadorService {
     return this.organizadorRepository.update(id,organizadorEncontrado);    
   }
 
+  async findOne(id: number) {
+    const organizadorEncontrado = await this.findByID(id);
+    if (!organizadorEncontrado) throw new NotFoundException("No se encontro al organizador buscado")
+    return organizadorEncontrado;
+  }
+
 }
