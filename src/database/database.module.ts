@@ -5,27 +5,33 @@ import { Usuario } from "src/usuario/entities/usuario.entity";
 import { ContenidoHome } from "src/contenido_home/entities/contenido_home.entity";
 import { Organizador } from "src/organizador/entities/organizador.entity";
 import { Evento } from "src/evento/entities/evento.entity";
+import { Facultad } from "src/facultad/entities/facultad.entity";
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-        isGlobal: true, 
-      }),
+      isGlobal: true,
+    }),
     TypeOrmModule.forRoot({
-    type: 'postgres',
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT || '5432', 10),
-    username: process.env.DB_USERNAME,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME, 
-    entities: [Usuario,ContenidoHome,Organizador,Evento],
-    synchronize: true,      
-    ssl: {
+      type: 'postgres',
+      host: process.env.DB_HOST,
+      port: parseInt(process.env.DB_PORT || '5432', 10),
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      entities: [
+        Usuario,
+        ContenidoHome,
+        Organizador,
+        Evento,
+        Facultad],
+      synchronize: true,
+      ssl: {
         rejectUnauthorized: false,
-    },
-    autoLoadEntities: true,
+      },
+      autoLoadEntities: true,
     }),],
-    
-    exports: [TypeOrmModule],
+
+  exports: [TypeOrmModule],
 })
-export class DatabaseModule {}
+export class DatabaseModule { }
