@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateSeccioneDto } from './dto/create-seccione.dto';
 import { UpdateSeccioneDto } from './dto/update-seccione.dto';
+import { Seccione } from './entities/seccione.entity';
 
 @Injectable()
 export class SeccionesService {
@@ -12,7 +13,7 @@ export class SeccionesService {
     return `This action returns all secciones`;
   }
 
-  findOne(id: number) {
+  findOne(id: number):Seccione {
     return `This action returns a #${id} seccione`;
   }
 
