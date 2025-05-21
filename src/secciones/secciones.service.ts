@@ -35,4 +35,10 @@ export class SeccionesService {
      await this.seccioneRepositiry.delete(id);
     return true ;
   }
+
+  async findOne(id: number) {
+    const seccion= await this.seccioneRepositiry.findOneBy({id_seccion:id});
+    if(!seccion) throw new  NotFoundException("La seccion no existe");
+    return seccion;
+  }
 }
