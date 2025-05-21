@@ -5,9 +5,6 @@ export class CreateSeccioneDto {
   nombre: string;
   @IsNotEmpty()
   @IsString()
-  cargo: string;
-  @IsNotEmpty()
-  @IsString()
   descripcion: string;
   @IsNotEmpty()
   @IsString()

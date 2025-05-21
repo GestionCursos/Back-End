@@ -5,7 +5,7 @@ import { UpdateEventoDto } from './dto/update-evento.dto';
 
 @Controller('evento')
 export class EventoController {
-  constructor(private readonly eventoService: EventoService) {}
+  constructor(private readonly eventoService: EventoService) { }
 
   @Post()
   create(@Body() createEventoDto: CreateEventoDto) {
@@ -18,17 +18,17 @@ export class EventoController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.eventoService.findOne(+id);
+  findOne(@Param('id') id: number) {
+    return this.eventoService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEventoDto: UpdateEventoDto) {
-    return this.eventoService.update(+id, updateEventoDto);
+  update(@Param('id') id: number, @Body() updateEventoDto: UpdateEventoDto) {
+    return this.eventoService.update(id, updateEventoDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.eventoService.remove(+id);
+  remove(@Param('id') id: number) {
+    return this.eventoService.remove(id);
   }
 }

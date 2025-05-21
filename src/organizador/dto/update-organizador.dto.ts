@@ -1,4 +1,7 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateOrganizadorDto } from './create-organizador.dto';
+import { IsNotEmpty, IsString } from 'class-validator';
 
-export class UpdateOrganizadorDto extends PartialType(CreateOrganizadorDto) {}
+export class UpdateOrganizadorDto {
+    @IsNotEmpty()
+    @IsString()
+    nombre: string;
+}
