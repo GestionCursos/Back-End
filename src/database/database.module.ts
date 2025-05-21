@@ -2,10 +2,12 @@ import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ConfigModule } from "@nestjs/config";
 import { Usuario } from "src/usuario/entities/usuario.entity";
+import { Autoridade } from "src/autoridades/entities/autoridade.entity";
 import { ContenidoHome } from "src/contenido_home/entities/contenido_home.entity";
 import { Organizador } from "src/organizador/entities/organizador.entity";
 import { Evento } from "src/evento/entities/evento.entity";
 import { Facultad } from "src/facultad/entities/facultad.entity";
+import { Seccione } from "src/secciones/entities/seccione.entity";
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { Facultad } from "src/facultad/entities/facultad.entity";
         ContenidoHome,
         Organizador,
         Evento,
+        Seccione,
+        Autoridade,
         Facultad],
       synchronize: true,
       ssl: {
