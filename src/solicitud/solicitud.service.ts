@@ -67,5 +67,6 @@ export class SolicitudService {
     }
     solicitudEncontrada.estado = updateSolicitudDto.estado;
     await this.solicitudRepository.save(solicitudEncontrada);
+    return true;
   }
 }
