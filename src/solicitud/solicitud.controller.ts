@@ -17,18 +17,11 @@ export class SolicitudController {
     return this.solicitudService.findAll();
   }
 
+
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.solicitudService.findOne(+id);
+  findOne(@Param('id') id: number) {
+    return this.solicitudService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSolicitudDto: UpdateSolicitudDto) {
-    return this.solicitudService.update(+id, updateSolicitudDto);
-  }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.solicitudService.remove(+id);
-  }
 }
