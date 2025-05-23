@@ -8,6 +8,7 @@ import { Organizador } from "src/organizador/entities/organizador.entity";
 import { Evento } from "src/evento/entities/evento.entity";
 import { Facultad } from "src/facultad/entities/facultad.entity";
 import { Seccione } from "src/secciones/entities/seccione.entity";
+import { Solicitud } from "src/solicitud/entities/solicitud.entity";
 
 @Module({
   imports: [
@@ -28,7 +29,8 @@ import { Seccione } from "src/secciones/entities/seccione.entity";
         Evento,
         Seccione,
         Autoridade,
-        Facultad],
+        Facultad,
+        Solicitud],
       synchronize: true,
       ssl: {
         rejectUnauthorized: false,
