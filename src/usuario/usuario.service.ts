@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { Usuario } from './entities/usuario.entity';
@@ -18,23 +18,31 @@ export class UsuarioService {
     return savedUsuario;
   }
 
-  findAll() {
-    return this.usuarioRepository.find();
+  async findAll() {
+    const buscarTodo= await this.usuarioRepository.find();
+    if(!buscarTodo){
+      throw new NotFoundException("Error de Conexion");
+    }
+    return  buscarTodo;
   }
 
-  findOne(id: string) {
-    return this.usuarioRepository.findOne({ where: { uid_firebase: id } });
+  async findOne(id: string) {
+    const buscarUno= await this.usuarioRepository.findOne({ where: { uid_firebase: id } });
+    if(!buscarUno){
+      throw new NotFoundException("No se encontro al Usuario");
+    }
+    return  buscarUno;
   }
 
-  update(id: string, updateUsuarioDto: UpdateUsuarioDto) {
-    const upd = this.usuarioRepository.update({ uid_firebase: id }, updateUsuarioDto);
+  async update(id: string, updateUsuarioDto: UpdateUsuarioDto) {
+    const upd = await this.usuarioRepository.update({ uid_firebase: id }, updateUsuarioDto);
     if (!upd) {
       throw new Error('Usuario not found');
     }
     return true;
   }
 
-  remove(id: string) {
-    return this.usuarioRepository.softDelete({ uid_firebase: id });
+  async remove(id: string) {
+    return  await this.usuarioRepository.softDelete({ uid_firebase: id });
   }
 }

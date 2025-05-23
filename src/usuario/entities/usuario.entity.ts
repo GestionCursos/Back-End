@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryColumn } from "typeorm";
+import { Column, DeleteDateColumn, Entity, PrimaryColumn } from "typeorm";
 
 @Entity("Usuarios")
 export class Usuario {
@@ -34,4 +34,6 @@ export class Usuario {
   
     @Column()
     url_foto: string;
+    @DeleteDateColumn({ name: 'fecha_eliminacion', nullable: true ,default:null})
+    fechaEliminacion?: Date;
 }
