@@ -42,7 +42,7 @@ export class UsuarioService {
     return true;
   }
 
-  remove(id: string) {
-    return this.usuarioRepository.softDelete({ uid_firebase: id });
+  async remove(id: string) {
+    return  await this.usuarioRepository.softDelete({ uid_firebase: id });
   }
 }
