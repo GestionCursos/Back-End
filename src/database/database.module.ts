@@ -1,13 +1,15 @@
-import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { ConfigModule } from "@nestjs/config";
-import { Usuario } from "src/usuario/entities/usuario.entity";
-import { Autoridade } from "src/autoridades/entities/autoridade.entity";
-import { ContenidoHome } from "src/contenido_home/entities/contenido_home.entity";
-import { Organizador } from "src/organizador/entities/organizador.entity";
-import { Evento } from "src/evento/entities/evento.entity";
-import { Facultad } from "src/facultad/entities/facultad.entity";
-import { Seccione } from "src/secciones/entities/seccione.entity";
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
+import { Usuario } from 'src/usuario/entities/usuario.entity';
+import { Autoridade } from 'src/autoridades/entities/autoridade.entity';
+import { ContenidoHome } from 'src/contenido_home/entities/contenido_home.entity';
+import { Organizador } from 'src/organizador/entities/organizador.entity';
+import { Evento } from 'src/evento/entities/evento.entity';
+import { Facultad } from 'src/facultad/entities/facultad.entity';
+import { Seccione } from 'src/secciones/entities/seccione.entity';
+import { Solicitud } from 'src/solicitud/entities/solicitud.entity';
+import { DetalleError } from 'src/detalle-error/entities/detalle-error.entity';
 
 @Module({
   imports: [
@@ -28,14 +30,18 @@ import { Seccione } from "src/secciones/entities/seccione.entity";
         Evento,
         Seccione,
         Autoridade,
-        Facultad],
+        Facultad,
+        Solicitud,
+        DetalleError,
+      ],
       synchronize: true,
       ssl: {
         rejectUnauthorized: false,
       },
       autoLoadEntities: true,
-    }),],
+    }),
+  ],
 
   exports: [TypeOrmModule],
 })
-export class DatabaseModule { }
+export class DatabaseModule {}
