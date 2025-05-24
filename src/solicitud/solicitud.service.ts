@@ -30,15 +30,7 @@ export class SolicitudService {
     return solicitudCreada;
   }
 
-  async findAllSolicitudError() {
-    const result = await this.dataSource.query(
-      `SELECT s.id_solicitud,s.apartado,s.archivo,s.descripcion,s.justificacion,s.urgencia,u.nombres,u.apellidos,de.frecuencia_error from public."Solicitudes" s inner join "Usuarios" u on s.id_user =u.uid_firebase right JOIN public.detalle_errores de ON s.id_solicitud = de.id_solicitud where s.estado = 'Pendiente';`,
-    );
-    if (!result) {
-      throw new NotFoundException('Error de conexion');
-    }
-    return result;
-  }
+
   async findAllSolicitudGeneral() {
     const resultadoGeneral = await this.dataSource.query(
       `SELECT s.id_solicitud,s.apartado,s.archivo,s.descripcion,s.justificacion,s.urgencia,u.nombres,u.apellidos FROM public."Solicitudes" s inner join "Usuarios" u on s.id_user =u.uid_firebase LEFT JOIN public.detalle_errores de ON s.id_solicitud = de.id_solicitud WHERE de.id_solicitud IS null and s.estado ='Pendiente';`,

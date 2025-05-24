@@ -20,10 +20,7 @@ export class SolicitudController {
     return this.solicitudService.create(createSolicitudDto);
   }
 
-  @Get('solicitudesError')
-  findAllError() {
-    return this.solicitudService.findAllSolicitudError();
-  }
+  
   @Get('solicitudesGenerales')
   findAllGeneral() {
     return this.solicitudService.findAllSolicitudGeneral();
