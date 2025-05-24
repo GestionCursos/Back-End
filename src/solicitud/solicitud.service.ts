@@ -3,7 +3,7 @@ import { CreateSolicitudDto } from './dto/create-solicitud.dto';
 import { UpdateSolicitudDto } from './dto/update-solicitud.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Solicitud } from './entities/solicitud.entity';
-import { DataSource, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { UsuarioService } from 'src/usuario/usuario.service';
 
 @Injectable()
@@ -12,7 +12,6 @@ export class SolicitudService {
     @InjectRepository(Solicitud)
     private readonly solicitudRepository: Repository<Solicitud>,
     private readonly usuarioService: UsuarioService,
-    private readonly dataSource: DataSource,
   ) {}
   async create(createSolicitudDto: CreateSolicitudDto) {
     const usuarioEncontrado = await this.usuarioService.findOne(
@@ -30,19 +29,38 @@ export class SolicitudService {
     return solicitudCreada;
   }
 
-
   async findAllSolicitudGeneral() {
-    const resultadoGeneral = await this.dataSource.query(
-      `SELECT s.id_solicitud,s.apartado,s.archivo,s.descripcion,s.justificacion,s.urgencia,u.nombres,u.apellidos FROM public."Solicitudes" s inner join "Usuarios" u on s.id_user =u.uid_firebase LEFT JOIN public.detalle_errores de ON s.id_solicitud = de.id_solicitud WHERE de.id_solicitud IS null and s.estado ='Pendiente';`,
-    );
-    if (!resultadoGeneral) {
-      throw new NotFoundException('No se Encontro la Solicitud');
+    const resultadoGeneral = await this.solicitudRepository
+      .createQueryBuilder('solicitud')
+      .leftJoinAndSelect('solicitud.idUser', 'usuario')
+      .select([
+        'solicitud.idSolicitud',
+        'solicitud.apartado',
+        'solicitud.tipoCambio',
+        'solicitud.otroTipo',
+        'solicitud.descripcion',
+        'solicitud.justificacion',
+        'solicitud.urgencia',
+        'solicitud.archivo',
+        'solicitud.estado',
+        'usuario.uid_firebase',
+        'usuario.nombres',
+        'usuario.apellidos',
+        'usuario.correo',
+      ])
+      .getMany();
+
+    if (!resultadoGeneral || resultadoGeneral.length === 0) {
+      throw new NotFoundException('No se encontró ninguna solicitud');
     }
+
     return resultadoGeneral;
   }
 
   async findOne(id: number) {
-    const resultadoPorUno = await this.solicitudRepository.findOneBy({idSolicitud: id})
+    const resultadoPorUno = await this.solicitudRepository.findOneBy({
+      idSolicitud: id,
+    });
     if (!resultadoPorUno) {
       throw new NotFoundException('No se Encontro la Solicitud');
     }
