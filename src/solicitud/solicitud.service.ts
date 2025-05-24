@@ -50,9 +50,7 @@ export class SolicitudService {
   }
 
   async findOne(id: number) {
-    const resultadoPorUno = await this.dataSource.query(
-      `SELECT s.*,de.id_detalle,de.pasos_reproduccion,de.resultado_esperado,de.resultado_observado,de.fecha_insidente,de.frecuencia_error,de.mensaje_error,de.sistema_navegador,de.url_error,de.workaround,u.nombres ,u.apellidos from public."Solicitudes" s inner join "Usuarios" u on s.id_user =u.uid_firebase LEFT JOIN public.detalle_errores de ON s.id_solicitud = de.id_solicitud where s.id_solicitud =${id};`,
-    );
+    const resultadoPorUno = await this.solicitudRepository.findOneBy({idSolicitud: id})
     if (!resultadoPorUno) {
       throw new NotFoundException('No se Encontro la Solicitud');
     }
