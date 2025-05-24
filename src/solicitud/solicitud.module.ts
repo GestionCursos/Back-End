@@ -8,7 +8,7 @@ import { UsuarioModule } from 'src/usuario/usuario.module';
 @Module({
   controllers: [SolicitudController],
   providers: [SolicitudService],
-  imports:[TypeOrmModule.forFeature([Solicitud]),UsuarioModule]
-
+  imports:[TypeOrmModule.forFeature([Solicitud]),UsuarioModule],
+  exports:[SolicitudService]
 })
 export class SolicitudModule {}

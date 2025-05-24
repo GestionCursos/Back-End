@@ -18,17 +18,8 @@ export class DetalleErrorController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.detalleErrorService.findOne(+id);
+  findOne(@Param('id') id: number) {
+    return this.detalleErrorService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDetalleErrorDto: UpdateDetalleErrorDto) {
-    return this.detalleErrorService.update(+id, updateDetalleErrorDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.detalleErrorService.remove(+id);
-  }
 }
