@@ -42,7 +42,7 @@ export class EventoService {
     });
   }
 
-   async update(id: number, updateEventoDto: UpdateEventoDto) {
+  async update(id: number, updateEventoDto: UpdateEventoDto) {
     const eventoEncontrado = await this.eventoRepository.findOne({ where: { id_evento: id } });
     if (!eventoEncontrado) {
       throw new NotFoundException(`Evento con id ${id} no encontrado`);
@@ -84,5 +84,13 @@ export class EventoService {
 
   remove(id: number) {
     return this.eventoRepository.softDelete(id);
+  }
+  
+  async obtenerUltimos(): Promise<{ nombre: string; visible: boolean }[]> {
+    return await this.eventoRepository.find({
+      select: ['nombre', 'visible'],
+      order: { id_evento: 'DESC' },
+      take: 5,
+    });
   }
 }
