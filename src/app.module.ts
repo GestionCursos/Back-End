@@ -19,9 +19,10 @@ import { DatabaseModule } from './database/database.module';
 import { FacultadModule } from './facultad/facultad.module';
 import { DetalleErrorModule } from './detalle-error/detalle-error.module';
 import { SolicitudModule } from './solicitud/solicitud.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
-  imports: [DatabaseModule, FirebaseModule, ContenidoHomeModule, AutoridadesModule, SeccionesModule, RequisitoModule, RequisitoEventoModule, RequisitoInscripcionModule, EventoModule, OrganizadorModule, NotaModule, CertificadoModule, UsuarioModule, InscripcionModule, AsistenciaModule,  FacultadModule, DetalleErrorModule, SolicitudModule],
+  imports: [DatabaseModule, FirebaseModule, ContenidoHomeModule, AutoridadesModule, SeccionesModule, RequisitoModule, RequisitoEventoModule, RequisitoInscripcionModule, EventoModule, OrganizadorModule, NotaModule, CertificadoModule, UsuarioModule, InscripcionModule, AsistenciaModule,  FacultadModule, DetalleErrorModule, SolicitudModule,DashboardModule],
   controllers: [AppController],
   providers: [AppService],
 })

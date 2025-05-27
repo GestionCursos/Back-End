@@ -17,7 +17,7 @@ export class UsuarioController {
     return this.usuarioService.findAll();
   }
 
-  @Get(':id')
+  @Get('user/:id')
   findOne(@Param('id') id: string) {
     return this.usuarioService.findOne(id);
   }
@@ -34,6 +34,7 @@ export class UsuarioController {
   
   @Get('rol')
   findByRol(@Request() req) {
+    console.log(req.userUid)
     return this.usuarioService.findRol(req.userUid);
   }
 }
