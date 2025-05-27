@@ -33,6 +33,9 @@ export class SolicitudService {
     const resultadoGeneral = await this.solicitudRepository
       .createQueryBuilder('solicitud')
       .leftJoinAndSelect('solicitud.idUser', 'usuario')
+      .leftJoin('detalle_errores', 'detalle', 'detalle.id_solicitud = solicitud.id_solicitud')
+      .where('detalle.id_solicitud IS NULL')
+      .andWhere('solicitud.estado = :estado', { estado: 'Pendiente' })
       .select([
         'solicitud.idSolicitud',
         'solicitud.apartado',
@@ -74,6 +77,21 @@ export class SolicitudService {
       throw new NotFoundException('No se Encontro la Solicitud');
     }
     solicitudEncontrada.estado = updateSolicitudDto.estado;
+    fetch(`${process.env.API_URL_CORREO}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        to: solicitudEncontrada.idUser.correo,
+        subject: "Estado Solicitud",
+        text: `Hola, ${solicitudEncontrada.idUser.nombres}, 
+        este es un correo enviado desde la administración de nuestra web de cursos.
+        Te informamos que tu solicitud de ${solicitudEncontrada.tipoCambio} ha sido ${updateSolicitudDto.estado}.
+        \n\nHemos considerado tu solicitud y hemos tomado la decisión de ${updateSolicitudDto.estado} por el motivo de ${updateSolicitudDto.descripcion}.
+        \n\nEstaremos pendientes de tus solicitudes. ¡Sigue aportando a nuestra web!`
+      })
+    })
     await this.solicitudRepository.save(solicitudEncontrada);
     return true;
   }

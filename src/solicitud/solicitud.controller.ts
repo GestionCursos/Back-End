@@ -10,17 +10,18 @@ import {
 import { SolicitudService } from './solicitud.service';
 import { CreateSolicitudDto } from './dto/create-solicitud.dto';
 import { UpdateSolicitudDto } from './dto/update-solicitud.dto';
+import { Public } from 'src/guard/decorators/public.decorator';
 
 @Controller('solicitud')
 export class SolicitudController {
   constructor(private readonly solicitudService: SolicitudService) {}
 
   @Post()
+  @Public()
   create(@Body() createSolicitudDto: CreateSolicitudDto) {
     return this.solicitudService.create(createSolicitudDto);
   }
 
-  
   @Get('solicitudesGenerales')
   findAllGeneral() {
     return this.solicitudService.findAllSolicitudGeneral();
