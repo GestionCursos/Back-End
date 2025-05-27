@@ -1,9 +1,6 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateUsuarioDto {
-  @IsString()
-  @IsNotEmpty()
-  uid_firebase: string;
 
   @IsString()
   @IsNotEmpty()
