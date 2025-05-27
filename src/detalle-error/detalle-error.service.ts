@@ -42,7 +42,7 @@ async findOne(id: number) {
 }
   async findAll() {
   const detalles = await this.detalleRepository.find({
-    relations: ['idSolicitud'], 
+    relations: ['idSolicitud', 'idSolicitud.idUser'], 
   });
 
   return detalles;

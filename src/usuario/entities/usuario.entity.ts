@@ -1,4 +1,5 @@
-import { Column, DeleteDateColumn, Entity, PrimaryColumn } from 'typeorm';
+import { Facultad } from 'src/facultad/entities/facultad.entity';
+import { Column, DeleteDateColumn, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
 
 @Entity('Usuarios')
 export class Usuario {
@@ -24,9 +25,6 @@ export class Usuario {
   rol: string;
 
   @Column()
-  carrera: string;
-
-  @Column()
   estado: string;
 
   @Column()
@@ -37,4 +35,7 @@ export class Usuario {
     default: null,
   })
   fechaEliminacion?: Date;
+
+  @ManyToOne(() => Facultad, (facultad) => facultad.id, { nullable: true })
+  idCarrera: Facultad;
 }
