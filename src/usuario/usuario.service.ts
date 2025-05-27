@@ -35,7 +35,7 @@ export class UsuarioService {
   }
 
   async findOne(id: string) {
-    const buscarUno = await this.usuarioRepository.findOne({ where: { uid_firebase: id } });
+    const buscarUno = await this.usuarioRepository.findOne({ where: { uid_firebase: id } ,relations:['idCarrera']});
     if (!buscarUno) {
       throw new NotFoundException("No se encontro al Usuario");
     }

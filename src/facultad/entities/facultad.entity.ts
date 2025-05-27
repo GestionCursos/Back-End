@@ -7,6 +7,6 @@ export class Facultad {
     id: number;
     @Column({ type: 'varchar', length: 50, nullable: false })
     nombre: string;
-    @ManyToMany(() => Evento, (evento) => evento.facultades)
+    @ManyToMany(() => Evento, (evento) => evento.carreras)
     eventos: Evento[];
 }

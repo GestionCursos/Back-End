@@ -27,23 +27,33 @@ export class Evento {
     notaAprovacion: number;
     @Column({ name: "requiere_asistencia" })
     requiereAsistencia: boolean;
-    @Column({name:"url_foto"})
-    urlFoto:string;
+    @Column({ name: "url_foto" })
+    urlFoto: string;
     @Column()
-    visible:boolean;
+    visible: boolean;
     @Column()
-    descripcion:string;
-    @ManyToOne(()=>Organizador,(organizador)=>organizador.id)
-    @JoinColumn({name:"id_organizador"})
-    idOrganizador:Organizador;
+    descripcion: string;
+    @ManyToOne(() => Organizador, (organizador) => organizador.id)
+    @JoinColumn({ name: "id_organizador" })
+    idOrganizador: Organizador;
 
-    @ManyToOne(()=>Seccione,(seccion)=>seccion.id_seccion)
-    @JoinColumn({name:"id_seccion"})
-    idSeccion:Seccione;
-    @DeleteDateColumn({ name: 'fecha_eliminacion', nullable: true ,default:null})
+    @ManyToOne(() => Seccione, (seccion) => seccion.id_seccion)
+    @JoinColumn({ name: "id_seccion" })
+    idSeccion: Seccione;
+    @DeleteDateColumn({ name: 'fecha_eliminacion', nullable: true, default: null })
     fechaEliminacion?: Date;
-    @ManyToMany(() => Facultad, (facultad) => facultad.eventos)
-    @JoinTable() 
-    facultades: Facultad[];
+    @ManyToMany(() => Facultad, (facultad) => facultad.eventos, { nullable: true })
+    @JoinTable({
+        name: 'evento_carreras',
+        joinColumn: {
+            name: 'evento_id',
+            referencedColumnName: 'id_evento'
+        },
+        inverseJoinColumn: {
+            name: 'carrera_id',
+            referencedColumnName: 'id'
+        }
+    })
+    carreras: Facultad[];
 
 }

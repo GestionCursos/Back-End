@@ -18,13 +18,13 @@ export class EventoService {
     private readonly organizadorService: OrganizadorService,
   ) { }
   async create(createEventoDto: CreateEventoDto) {
-    const facultad = await this.facultadService.findByIds(createEventoDto.facultades);
+    const carrera = await this.facultadService.findByIds(createEventoDto.facultades);
     const secciones = await this.seccionesService.findOne(createEventoDto.idSeeccion);
     const organizador = await this.organizadorService.findOne(createEventoDto.idOrganizador);
     const eventoPreparado = this.eventoRepository.create({
       ...createEventoDto,
       idSeccion: secciones,
-      facultades: facultad,
+      carreras: carrera,
       idOrganizador: organizador,
     });
 
@@ -32,14 +32,23 @@ export class EventoService {
   }
 
   async findAll() {
-    return await this.eventoRepository.find();
+    return await this.eventoRepository.find({ where: { visible: true } });
   }
 
   async findOne(id: number) {
-    return await this.eventoRepository.findOne({
+    const evento = await this.eventoRepository.findOne({
       where: { id_evento: id },
-      relations: ['facultades', 'idSeccion', 'idOrganizador'],
+      relations: ['carreras', 'idSeccion', 'idOrganizador'],
     });
+    if (!evento) throw new NotFoundException("No se encontro el evento buscado")
+    return evento;
+  }
+  async findOneApi(id: number) {
+    const evento = await this.eventoRepository.findOne({
+      where:{id_evento: id},relations:['carreras']
+    });
+    if (!evento) throw new NotFoundException("No se encontro el evento buscado")
+    return evento;
   }
 
   async update(id: number, updateEventoDto: UpdateEventoDto) {
@@ -55,7 +64,7 @@ export class EventoService {
         throw new NotFoundException(`Facultades con ids ${updateEventoDto.facultades} no encontradas`);
       }
       // Asignar las nuevas facultades al evento
-      eventoEncontrado.facultades = facultades;
+      eventoEncontrado.carreras = facultades;
     }
 
     if (updateEventoDto.idSeeccion) {
@@ -85,7 +94,7 @@ export class EventoService {
   remove(id: number) {
     return this.eventoRepository.softDelete(id);
   }
-  
+
   async obtenerUltimos(): Promise<{ nombre: string; visible: boolean }[]> {
     return await this.eventoRepository.find({
       select: ['nombre', 'visible'],
