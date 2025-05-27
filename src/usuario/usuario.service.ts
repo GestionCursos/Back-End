@@ -12,8 +12,9 @@ export class UsuarioService {
     private readonly usuarioRepository: Repository<Usuario>,
   ) {}
 
-  async create(createUsuarioDto: CreateUsuarioDto) {
+  async create(createUsuarioDto: CreateUsuarioDto, Uid:string) {
     const usuario = this.usuarioRepository.create(createUsuarioDto);
+    usuario.uid_firebase= Uid
     const savedUsuario = await this.usuarioRepository.save(usuario);
     return savedUsuario;
   }
