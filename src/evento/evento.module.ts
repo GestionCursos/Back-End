@@ -11,5 +11,6 @@ import { OrganizadorModule } from 'src/organizador/organizador.module';
   imports:[TypeOrmModule.forFeature([Evento]), SeccionesModule, FacultadModule,OrganizadorModule],
   controllers: [EventoController],
   providers: [EventoService],
+  exports: [EventoService]
 })
 export class EventoModule {}

@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { AutoridadesService } from './autoridades.service';
 import { CreateAutoridadeDto } from './dto/create-autoridade.dto';
 import { UpdateAutoridadeDto } from './dto/update-autoridade.dto';
+import { Public } from 'src/guard/decorators/public.decorator';
 
 @Controller('autoridades')
 export class AutoridadesController {
@@ -13,6 +14,7 @@ export class AutoridadesController {
   }
 
   @Get()
+  @Public()
   findAll() {
     return this.autoridadesService.findAll();
   }

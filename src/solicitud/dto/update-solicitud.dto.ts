@@ -5,4 +5,6 @@ import { IsString } from 'class-validator';
 export class UpdateSolicitudDto  {
     @IsString()
     estado: string;
+    @IsString()
+    descripcion:string;
 }
