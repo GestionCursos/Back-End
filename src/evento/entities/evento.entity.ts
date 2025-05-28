@@ -21,8 +21,8 @@ export class Evento {
     costo: number;
     @Column()
     categoria: string;
-    @Column({ name: "numero_horas" })
-    numeroHoras: string;
+    @Column({ name: "numero_horas", default: 0 })
+    numeroHoras: number;
     @Column({ name: "nota_aprovacion" })
     notaAprovacion: number;
     @Column({ name: "requiere_asistencia" })
