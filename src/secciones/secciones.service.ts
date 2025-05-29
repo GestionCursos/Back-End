@@ -25,6 +25,10 @@ export class SeccionesService {
     return listaSecciones;
   }
 
+  async findAllCreateEvento() {
+    const listaSecciones = await this.seccioneRepositiry.find();
+    return listaSecciones;
+  }
 
 
   async update(id: number, updateSeccioneDto: UpdateSeccioneDto) {

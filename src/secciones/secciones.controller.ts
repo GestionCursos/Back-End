@@ -27,6 +27,12 @@ export class SeccionesController {
     return this.seccionesService.findAll();
   }
 
+  @Get('/data')
+  @Public()
+  findAllSecciones(){
+    return this.seccionesService.findAllCreateEvento();
+  }
+
   @Patch(':id')
   update(
     @Param('id') id: number,
