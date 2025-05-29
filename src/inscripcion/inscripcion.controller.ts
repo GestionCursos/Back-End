@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Request } from '@nestjs/common';
 import { InscripcionService } from './inscripcion.service';
 import { CreateInscripcionDto } from './dto/create-inscripcion.dto';
 import { UpdateInscripcionDto } from './dto/update-inscripcion.dto';
@@ -8,8 +8,8 @@ export class InscripcionController {
   constructor(private readonly inscripcionService: InscripcionService) {}
 
   @Post()
-  create(@Body() createInscripcionDto: CreateInscripcionDto) {
-    return this.inscripcionService.create(createInscripcionDto);
+  create(@Body() createInscripcionDto: CreateInscripcionDto,@Request() req) {
+    return this.inscripcionService.create(createInscripcionDto,req.userUid);
   }
 
   @Get()
