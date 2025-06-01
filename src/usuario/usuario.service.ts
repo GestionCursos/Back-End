@@ -3,7 +3,7 @@ import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { Usuario } from './entities/usuario.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { FacultadService } from 'src/facultad/facultad.service';
 
 @Injectable()
@@ -11,7 +11,8 @@ export class UsuarioService {
   constructor(
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
-    private readonly carreraService: FacultadService
+    private readonly carreraService: FacultadService,
+    private readonly dataSource: DataSource
   ) { }
 
   async create(createUsuarioDto: CreateUsuarioDto, Uid: string) {
@@ -35,7 +36,7 @@ export class UsuarioService {
   }
 
   async findOne(id: string) {
-    const buscarUno = await this.usuarioRepository.findOne({ where: { uid_firebase: id } ,relations:['idCarrera']});
+    const buscarUno = await this.usuarioRepository.findOne({ where: { uid_firebase: id }, relations: ['idCarrera'] });
     if (!buscarUno) {
       throw new NotFoundException("No se encontro al Usuario");
     }
@@ -64,5 +65,29 @@ export class UsuarioService {
       urlUserImg: userUid.url_foto,
       username: userUid.nombres + ' ' + userUid.apellidos,
     };
+  }
+
+  async findUsuariosPorEvento(idEvento: number) {
+    const result = await this.dataSource.query(
+      `
+      select
+      	i.id_inscripcion as id,
+        (u.nombres || ' ' || u.apellidos)as nombre
+      from
+        "Usuarios" u
+      inner join "Inscripciones" i on
+        u.uid_firebase = i.id_usuario
+      inner join "Eventos" e on
+        e.id_evento = i.id_evento
+        full join notas n 
+        on n.id_inscripcion =i.id_inscripcion
+      where
+        e.id_evento = $1
+        and i.estado_inscripcion = 'Aprobado'
+        and n.nota is null;
+        `,
+      [idEvento]
+    );
+    return result;
   }
 }
