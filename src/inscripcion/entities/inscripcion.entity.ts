@@ -5,7 +5,7 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "t
 @Entity('Inscripciones')
 export class Inscripcion {
     @PrimaryGeneratedColumn({ name: 'id_inscripcion' })
-    idInsscripcion: number;
+    idInscripcion: number;
     @ManyToOne(() => Usuario, (usuario) => usuario.uid_firebase)
     @JoinColumn({ name: "id_usuario" })
     usuario: Usuario
