@@ -1,26 +1,74 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateInscripcionDto } from './dto/create-inscripcion.dto';
 import { UpdateInscripcionDto } from './dto/update-inscripcion.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Not, Repository } from 'typeorm';
+import { Inscripcion } from './entities/inscripcion.entity';
+import { EventoService } from 'src/evento/evento.service';
+import { UsuarioService } from 'src/usuario/usuario.service';
 
 @Injectable()
 export class InscripcionService {
-  create(createInscripcionDto: CreateInscripcionDto) {
-    return 'This action adds a new inscripcion';
+  constructor(
+    @InjectRepository(Inscripcion)
+    private readonly inscripcionRepository: Repository<Inscripcion>,
+    private readonly eventoService: EventoService,
+    private readonly usuarioService: UsuarioService,
+
+  ) { }
+  async create(createInscripcionDto: CreateInscripcionDto, uid_firebase: string) {
+    const user = await this.usuarioService.findOne(uid_firebase);
+    const evento = await this.eventoService.findOneApi(createInscripcionDto.evento);
+    const inscripcionPreparado = this.inscripcionRepository.create({
+      fechaInscripcion: new Date,
+      evento: evento,
+      usuario: user,
+    })
+    const carraresEvento = evento.carreras.map((carrera) => carrera.nombre)
+    if (carraresEvento.length !== 0) {
+      if (evento.carreras) {
+        if (!carraresEvento.includes(user.idCarrera.nombre)) {
+          throw new NotFoundException("NO tienes permitido inscribirte en este curso")
+        }
+      }
+    }
+    const inscripcionGuardada = await this.inscripcionRepository.save(inscripcionPreparado);
+    if (!inscripcionGuardada) throw new NotFoundException("Error de conexion")
+    return inscripcionGuardada
   }
 
-  findAll() {
-    return `This action returns all inscripcion`;
+  async findOne(id: number) {
+    const inscripcion = await this.inscripcionRepository.findOneBy({ idInscripcion: id })
+    if (!inscripcion) throw new NotFoundException("No existe una inscripcion con el id solicitado")
+    return inscripcion;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} inscripcion`;
+  async actualizar(id: number, updateInscripcionDto: UpdateInscripcionDto) {
+    const inscripcion = await this.findOne(id);
+    inscripcion.estadoInscripcion = updateInscripcionDto.estado;
+    const actualizado = await this.inscripcionRepository.save(inscripcion);
+    if (!actualizado) throw new NotFoundException("Error de coneccion")
+    return true
   }
 
-  update(id: number, updateInscripcionDto: UpdateInscripcionDto) {
-    return `This action updates a #${id} inscripcion`;
+  async obtenerInscripcionesPorIds(ids: number[]) {
+    const inscripciones = await this.inscripcionRepository.find({ where: { idInscripcion: In(ids) } });
+    if (!inscripciones || inscripciones.length === 0) {
+      throw new NotFoundException("No se encontraron inscripciones para generar los certificados");
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} inscripcion`;
+
+  async obtenerInscripcionesPorIdEvento(id: number) {
+    const inscripcionesDeEvento = await this.inscripcionRepository
+      .createQueryBuilder('inscripcion')
+      .innerJoin('inscripcion.evento', 'evento')
+      .innerJoin('inscripcion.nota', 'nota')
+      .innerJoin('inscripcion.usuario', 'usuario')
+      .where('evento.id_evento=:id', { id })
+      .andWhere('inscripcion.estado_inscripcion =:estado',{estado:'Aprobado'})
+      .select(['inscripcion.id_inscripcion', 'nota.nota as nota', 'usuario.nombres as nombres','usuario.apellidos as apellidos','usuario.uid_firebase as uid_firebase'])
+      .getRawMany();
+    return inscripcionesDeEvento;
   }
 }

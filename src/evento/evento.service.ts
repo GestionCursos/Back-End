@@ -3,28 +3,65 @@ import { CreateEventoDto } from './dto/create-evento.dto';
 import { UpdateEventoDto } from './dto/update-evento.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Evento } from './entities/evento.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { SeccionesService } from 'src/secciones/secciones.service';
 import { FacultadService } from 'src/facultad/facultad.service';
 import { OrganizadorService } from 'src/organizador/organizador.service';
+import { isEmpty } from 'class-validator';
 
 @Injectable()
 export class EventoService {
+  async getEventosPopulares() {
+    const eventos = await this.eventoRepository
+      .createQueryBuilder('evento')
+      .innerJoin('Inscripciones', 'inscripcion', 'inscripcion.evento = evento.id_evento')
+      .innerJoin('evento.idOrganizador', 'organizador')
+      .where('evento.visible = :visible', { visible: true })
+      .select([
+        'evento.id_evento AS id_evento',
+        'evento.nombre AS nombre',
+        'organizador.nombre AS organizador',
+        'COUNT(inscripcion.evento) AS estudiantes'
+      ])
+      .groupBy('evento.id_evento,organizador.nombre')
+      .orderBy('estudiantes', 'DESC')
+      .limit(4)
+      .getRawMany();
+    return eventos;
+  }
+  async findAllReportes() {
+    const eventos = await this.eventoRepository
+      .createQueryBuilder('evento')
+      .innerJoin('Inscripciones', 'inscripcion', 'inscripcion.evento = evento.id_evento')
+      .where('evento.visible = :visible', { visible: true })
+      .select(['evento.id_evento', 'evento.nombre'])
+      .groupBy('evento.id_evento')
+      .getRawMany();
+    return eventos.map(evento => ({
+      id_evento: evento.evento_id_evento,
+      nombre: evento.evento_nombre
+    }));
+  }
+
   constructor(
     @InjectRepository(Evento)
     private readonly eventoRepository: Repository<Evento>,
     private readonly seccionesService: SeccionesService,
     private readonly facultadService: FacultadService,
     private readonly organizadorService: OrganizadorService,
+    private readonly dataSource: DataSource
   ) { }
   async create(createEventoDto: CreateEventoDto) {
-    const facultad = await this.facultadService.findByIds(createEventoDto.facultades);
-    const secciones = await this.seccionesService.findOne(createEventoDto.idSeeccion);
+    let carrera;
+    if (createEventoDto.facultades||!isEmpty(createEventoDto.facultades) ) {
+      carrera = await this.facultadService.findByIds(createEventoDto.facultades);
+    }
+    const secciones = await this.seccionesService.findOne(createEventoDto.idSeccion);
     const organizador = await this.organizadorService.findOne(createEventoDto.idOrganizador);
     const eventoPreparado = this.eventoRepository.create({
       ...createEventoDto,
       idSeccion: secciones,
-      facultades: facultad,
+      carreras: carrera,
       idOrganizador: organizador,
     });
 
@@ -32,14 +69,23 @@ export class EventoService {
   }
 
   async findAll() {
-    return await this.eventoRepository.find();
+    return await this.eventoRepository.find({ where: { visible: true } });
   }
 
   async findOne(id: number) {
-    return await this.eventoRepository.findOne({
+    const evento = await this.eventoRepository.findOne({
       where: { id_evento: id },
-      relations: ['facultades', 'idSeccion', 'idOrganizador'],
+      relations: ['carreras', 'idSeccion', 'idOrganizador'],
     });
+    if (!evento) throw new NotFoundException("No se encontro el evento buscado")
+    return evento;
+  }
+  async findOneApi(id: number) {
+    const evento = await this.eventoRepository.findOne({
+      where: { id_evento: id }, relations: ['carreras']
+    });
+    if (!evento) throw new NotFoundException("No se encontro el evento buscado")
+    return evento;
   }
 
   async update(id: number, updateEventoDto: UpdateEventoDto) {
@@ -55,13 +101,13 @@ export class EventoService {
         throw new NotFoundException(`Facultades con ids ${updateEventoDto.facultades} no encontradas`);
       }
       // Asignar las nuevas facultades al evento
-      eventoEncontrado.facultades = facultades;
+      eventoEncontrado.carreras = facultades;
     }
 
-    if (updateEventoDto.idSeeccion) {
-      const secciones = await this.seccionesService.findOne(updateEventoDto.idSeeccion);
+    if (updateEventoDto.idSeccion) {
+      const secciones = await this.seccionesService.findOne(updateEventoDto.idSeccion);
       if (!secciones) {
-        throw new NotFoundException(`Sección con id ${updateEventoDto.idSeeccion} no encontrada`);
+        throw new NotFoundException(`Sección con id ${updateEventoDto.idSeccion} no encontrada`);
       }
       // Asignar la nueva sección al evento
       eventoEncontrado.idSeccion = secciones;
@@ -85,7 +131,7 @@ export class EventoService {
   remove(id: number) {
     return this.eventoRepository.softDelete(id);
   }
-  
+
   async obtenerUltimos(): Promise<{ nombre: string; visible: boolean }[]> {
     return await this.eventoRepository.find({
       select: ['nombre', 'visible'],
@@ -93,4 +139,38 @@ export class EventoService {
       take: 5,
     });
   }
+
+  async reporteCurso(id: number) {
+    const datosGeneralesEvento = await this.findOne(id);
+
+    const response = await this.dataSource.query(`
+        select
+          u.nombres || ' '||	u.apellidos as Estudiante,
+          u.correo,
+          n.nota,
+          a.porcentaje_asistencia as "asistencia",
+          CASE 
+            WHEN n.nota >= e.nota_aprovacion THEN 'Aprobado'
+            ELSE 'Reprobado'
+          END AS estado
+        from
+          "Inscripciones" i
+        inner join "Eventos" e on
+          e.id_evento = i.id_evento
+        inner join "Usuarios" u on
+          u.uid_firebase = i.id_usuario
+        inner join notas n on
+          n.id_inscripcion = i.id_inscripcion
+        inner join asistencias a on
+          a.id_inscripcion = i.id_inscripcion 
+        where e.id_evento = $1;
+      `, [id]);
+    const data = {
+      nombre_evento: datosGeneralesEvento.nombre,
+      instructor: datosGeneralesEvento.idOrganizador.nombre,
+      estudiantes: response
+    }
+    return data;
+  }
 }
+

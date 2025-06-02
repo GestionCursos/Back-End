@@ -12,14 +12,9 @@ export class UsuarioController {
     return this.usuarioService.create(createUsuarioDto, rec.userUid);
   }
 
-  @Get()
-  findAll() {
-    return this.usuarioService.findAll();
-  }
-
-  @Get('user/:id')
-  findOne(@Param('id') id: string) {
-    return this.usuarioService.findOne(id);
+  @Get('evento/:id')
+  findAll(@Param('id') id: number) {
+    return this.usuarioService.findUsuariosPorEvento(id);
   }
 
   @Patch(':id')

@@ -19,10 +19,16 @@ export class SeccionesService {
   }
 
   async findAll() {
-    const listaSecciones = await this.seccioneRepositiry.find();
+    const listaSecciones = await this.seccioneRepositiry.find({
+      relations: ['eventos'],
+    });
     return listaSecciones;
   }
 
+  async findAllCreateEvento() {
+    const listaSecciones = await this.seccioneRepositiry.find();
+    return listaSecciones;
+  }
 
 
   async update(id: number, updateSeccioneDto: UpdateSeccioneDto) {
@@ -37,7 +43,9 @@ export class SeccionesService {
   }
 
   async findOne(id: number) {
-    const seccion = await this.seccioneRepositiry.findOneBy({ id_seccion: id });
+    const seccion = await this.seccioneRepositiry.findOne({
+      where: { id_seccion: id }, relations: ['eventos']
+    });
     if (!seccion) throw new NotFoundException("La seccion no existe");
     return seccion;
   }

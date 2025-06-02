@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { Evento } from 'src/evento/entities/evento.entity';
+import { Column, Entity, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 @Entity("Secciones")
 export class Seccione {
   @PrimaryGeneratedColumn()
@@ -11,6 +12,6 @@ export class Seccione {
   icono_url: string;
   @Column()
   orden: number;
-  @Column()
-  visible: boolean;
+  @OneToMany(()=>Evento,(evento)=>evento.idSeccion)
+  eventos:Evento[]
 }

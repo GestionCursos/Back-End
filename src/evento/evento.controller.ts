@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { EventoService } from './evento.service';
 import { CreateEventoDto } from './dto/create-evento.dto';
 import { UpdateEventoDto } from './dto/update-evento.dto';
+import { Public } from 'src/guard/decorators/public.decorator';
 
 @Controller('evento')
 export class EventoController {
@@ -13,6 +14,7 @@ export class EventoController {
   }
 
   @Get()
+  @Public()
   findAll() {
     return this.eventoService.findAll();
   }

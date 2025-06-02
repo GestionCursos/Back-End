@@ -7,11 +7,11 @@ import { Facultad } from './entities/facultad.entity';
 @Injectable()
 export class FacultadService {
   constructor(
-     @InjectRepository(Facultad)
-     private readonly facultadRepository: Repository<Facultad>
+    @InjectRepository(Facultad)
+    private readonly facultadRepository: Repository<Facultad>
   ) { }
   async findOne(id: number) {
-    const facultadEncontrada=await this.facultadRepository.findOne({ where: { id } });
+    const facultadEncontrada = await this.facultadRepository.findOne({ where: { id } });
     if (!facultadEncontrada) throw new NotFoundException("No se encontro la facultad buscada")
     return facultadEncontrada;
   }
@@ -26,9 +26,14 @@ export class FacultadService {
     return nuevaFacultad;
   }
   async findByIds(ids: number[]) {
-    const facultades = await this.facultadRepository.find({where: { id: In(ids) }});
+    const facultades = await this.facultadRepository.find({ where: { id: In(ids) } });
     if (!facultades) throw new NotFoundException("No se encontraron facultades");
     return facultades;
   }
 
+  async findByNombre(nombre: string) {
+    const carrera = await this.facultadRepository.findOneBy({ nombre: nombre });
+    if (!carrera) return null;
+    return carrera;
+  }
 }

@@ -1,4 +1,8 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateInscripcionDto } from './create-inscripcion.dto';
+import { IsNotEmpty, IsString } from 'class-validator';
 
-export class UpdateInscripcionDto extends PartialType(CreateInscripcionDto) {}
+export class UpdateInscripcionDto {
+    @IsString()
+    @IsNotEmpty()
+    estado: string;
+}
+
