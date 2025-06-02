@@ -1,5 +1,6 @@
 import { Facultad } from "src/facultad/entities/facultad.entity";
 import { Organizador } from "src/organizador/entities/organizador.entity";
+import { Requisito } from "src/requisito/entities/requisito.entity";
 import { Seccione } from "src/secciones/entities/seccione.entity";
 import { Column, DeleteDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
@@ -55,5 +56,19 @@ export class Evento {
         }
     })
     carreras: Facultad[];
+    @ManyToMany(() => Requisito, (requisito) => requisito.eventos, { nullable: true })
+    @JoinTable({
+        name: 'requisito_evento',
+        joinColumn: {
+            name: 'evento_id',
+            referencedColumnName: 'id_evento'
+        },
+        inverseJoinColumn: {
+            name: 'requisito_id',
+            referencedColumnName: 'idRequisito'
+        }
+    })
+    requisitos: Requisito[];
+
 
 }
