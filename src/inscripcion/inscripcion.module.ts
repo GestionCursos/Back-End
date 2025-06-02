@@ -7,8 +7,13 @@ import { UsuarioModule } from 'src/usuario/usuario.module';
 import { EventoModule } from 'src/evento/evento.module';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Inscripcion]),UsuarioModule,EventoModule],
+  imports: [
+    TypeOrmModule.forFeature([Inscripcion]),
+    UsuarioModule,
+    EventoModule,
+  ],
   controllers: [InscripcionController],
   providers: [InscripcionService],
+  exports: [InscripcionService],
 })
 export class InscripcionModule {}
