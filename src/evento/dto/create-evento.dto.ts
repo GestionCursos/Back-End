@@ -53,4 +53,9 @@ export class CreateEventoDto {
     @ArrayNotEmpty()
     @IsNumber({}, { each: true })
     facultades: number[];
+    @IsOptional()
+    @IsArray()
+    @ArrayNotEmpty()
+    @IsNumber({}, { each: true })
+    requisitos: number[];
 }
