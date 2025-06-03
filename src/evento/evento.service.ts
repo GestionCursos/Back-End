@@ -8,9 +8,42 @@ import { SeccionesService } from 'src/secciones/secciones.service';
 import { FacultadService } from 'src/facultad/facultad.service';
 import { OrganizadorService } from 'src/organizador/organizador.service';
 import { isEmpty } from 'class-validator';
+import { RequisitoService } from 'src/requisito/requisito.service';
+import { EventoResumenDTO } from './dto/EventoResumenDTO';
 
 @Injectable()
 export class EventoService {
+  async reporteOrganizador(id: number) {
+    const organizador = await this.dataSource.query(`
+      select o.id_organizador as id,o.nombre,o.institucion,o.correo from "Organizador" o where o.id_organizador=$1;
+    `, [id])
+    const cursos = await this.dataSource.query(
+      `
+      select
+        e.nombre,
+        COUNT(*) as inscritos,
+        AVG(n.nota) as promedio
+      from
+        notas n
+      inner join "Inscripciones" i on
+        n.id_inscripcion = i.id_inscripcion
+      inner join "Eventos" e on
+        i.id_evento = e.id_evento
+      where
+        e.id_organizador = $1
+      group by
+        e.nombre;
+      `, [id]
+    )
+    const data = {
+      organizador: {
+        ...organizador[0]
+      },
+      cursos: [...cursos]
+    }
+    return data;
+  }
+
   async getEventosPopulares() {
     const eventos = await this.eventoRepository
       .createQueryBuilder('evento')
@@ -49,12 +82,17 @@ export class EventoService {
     private readonly seccionesService: SeccionesService,
     private readonly facultadService: FacultadService,
     private readonly organizadorService: OrganizadorService,
-    private readonly dataSource: DataSource
+    private readonly dataSource: DataSource,
+    private readonly requisitoService: RequisitoService
   ) { }
   async create(createEventoDto: CreateEventoDto) {
     let carrera;
-    if (createEventoDto.facultades||!isEmpty(createEventoDto.facultades) ) {
+    if (createEventoDto.facultades || !isEmpty(createEventoDto.facultades)) {
       carrera = await this.facultadService.findByIds(createEventoDto.facultades);
+    }
+    let requisito;
+    if (createEventoDto.requisitos) {
+      requisito = await this.requisitoService.findByIds(createEventoDto.requisitos);
     }
     const secciones = await this.seccionesService.findOne(createEventoDto.idSeccion);
     const organizador = await this.organizadorService.findOne(createEventoDto.idOrganizador);
@@ -63,6 +101,7 @@ export class EventoService {
       idSeccion: secciones,
       carreras: carrera,
       idOrganizador: organizador,
+      requisitos: requisito
     });
 
     return await this.eventoRepository.save(eventoPreparado);
@@ -172,5 +211,42 @@ export class EventoService {
     }
     return data;
   }
+
+
+
+  async findOneResumen(id: number): Promise<EventoResumenDTO> {
+    const evento = await this.eventoRepository
+      .createQueryBuilder('evento')
+      .leftJoin('evento.idOrganizador', 'organizador')
+      .leftJoin('evento.idSeccion', 'seccion')
+      .select([
+        'evento.id_evento',
+        'evento.nombre',
+        'evento.tipoEvento',
+        'evento.numeroHoras',
+        'evento.modalidad',
+        'evento.descripcion',
+        'organizador.nombre',
+        'organizador.institucion',
+        'seccion.nombre'
+      ])
+      .where('evento.id_evento = :id', { id })
+      .getOne();
+
+    if (!evento) throw new NotFoundException("No se encontró el evento buscado");
+
+    return {
+      id:evento.id_evento,
+      nombre: evento.nombre,
+      tipoEvento: evento.tipoEvento,
+      numeroHoras: evento.numeroHoras,
+      modalidad: evento.modalidad,
+      descripcion: evento.descripcion,
+      organizadorNombre: evento.idOrganizador.nombre,
+      organizadorInstitucion: evento.idOrganizador.institucion,
+      seccionNombre: evento.idSeccion.nombre,
+    };
+  }
+
 }
 
