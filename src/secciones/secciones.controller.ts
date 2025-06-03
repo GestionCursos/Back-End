@@ -10,6 +10,7 @@ import {
 import { SeccionesService } from './secciones.service';
 import { CreateSeccioneDto } from './dto/create-seccione.dto';
 import { UpdateSeccioneDto } from './dto/update-seccione.dto';
+import { Public } from 'src/guard/decorators/public.decorator';
 
 @Controller('secciones')
 export class SeccionesController {
@@ -21,8 +22,15 @@ export class SeccionesController {
   }
 
   @Get()
+  @Public()
   findAll() {
     return this.seccionesService.findAll();
+  }
+
+  @Get('/data')
+  @Public()
+  findAllSecciones(){
+    return this.seccionesService.findAllCreateEvento();
   }
 
   @Patch(':id')

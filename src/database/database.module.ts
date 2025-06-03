@@ -10,6 +10,8 @@ import { Facultad } from 'src/facultad/entities/facultad.entity';
 import { Seccione } from 'src/secciones/entities/seccione.entity';
 import { Solicitud } from 'src/solicitud/entities/solicitud.entity';
 import { DetalleError } from 'src/detalle-error/entities/detalle-error.entity';
+import { Requisito } from 'src/requisito/entities/requisito.entity';
+import { RequisitoInscripcion } from 'src/requisito_inscripcion/entities/requisito_inscripcion.entity';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { DetalleError } from 'src/detalle-error/entities/detalle-error.entity';
         Facultad,
         Solicitud,
         DetalleError,
+        Requisito,
+        RequisitoInscripcion,
       ],
       synchronize: true,
       ssl: {

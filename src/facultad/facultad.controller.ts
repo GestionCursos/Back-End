@@ -1,9 +1,9 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { FacultadService } from './facultad.service';
 import { CreateFacultadDto } from './dto/create-facultad.dto';
-import { UpdateFacultadDto } from './dto/update-facultad.dto';
+import { Public } from 'src/guard/decorators/public.decorator';
 
-@Controller('facultad')
+@Controller('carreras')
 export class FacultadController {
   constructor(private readonly facultadService: FacultadService) { }
   @Post()
@@ -11,6 +11,7 @@ export class FacultadController {
     return this.facultadService.create(createFacultadDto);
   }
   @Get()
+  @Public()
   findAll() {
     return this.facultadService.findAll();
   }

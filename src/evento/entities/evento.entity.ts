@@ -1,5 +1,6 @@
 import { Facultad } from "src/facultad/entities/facultad.entity";
 import { Organizador } from "src/organizador/entities/organizador.entity";
+import { Requisito } from "src/requisito/entities/requisito.entity";
 import { Seccione } from "src/secciones/entities/seccione.entity";
 import { Column, DeleteDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
@@ -21,29 +22,53 @@ export class Evento {
     costo: number;
     @Column()
     categoria: string;
-    @Column({ name: "numero_horas" })
-    numeroHoras: string;
+    @Column({ name: "numero_horas", default: 0 })
+    numeroHoras: number;
     @Column({ name: "nota_aprovacion" })
     notaAprovacion: number;
     @Column({ name: "requiere_asistencia" })
     requiereAsistencia: boolean;
-    @Column({name:"url_foto"})
-    urlFoto:string;
+    @Column({ name: "url_foto" })
+    urlFoto: string;
     @Column()
-    visible:boolean;
+    visible: boolean;
     @Column()
-    descripcion:string;
-    @ManyToOne(()=>Organizador,(organizador)=>organizador.id)
-    @JoinColumn({name:"id_organizador"})
-    idOrganizador:Organizador;
+    descripcion: string;
+    @ManyToOne(() => Organizador, (organizador) => organizador.id)
+    @JoinColumn({ name: "id_organizador" })
+    idOrganizador: Organizador;
 
-    @ManyToOne(()=>Seccione,(seccion)=>seccion.id_seccion)
-    @JoinColumn({name:"id_seccion"})
-    idSeccion:Seccione;
-    @DeleteDateColumn({ name: 'fecha_eliminacion', nullable: true ,default:null})
+    @ManyToOne(() => Seccione, (seccion) => seccion.id_seccion)
+    @JoinColumn({ name: "id_seccion" })
+    idSeccion: Seccione;
+    @DeleteDateColumn({ name: 'fecha_eliminacion', nullable: true, default: null })
     fechaEliminacion?: Date;
-    @ManyToMany(() => Facultad, (facultad) => facultad.eventos)
-    @JoinTable() 
-    facultades: Facultad[];
+    @ManyToMany(() => Facultad, (facultad) => facultad.eventos, { nullable: true })
+    @JoinTable({
+        name: 'evento_carreras',
+        joinColumn: {
+            name: 'evento_id',
+            referencedColumnName: 'id_evento'
+        },
+        inverseJoinColumn: {
+            name: 'carrera_id',
+            referencedColumnName: 'id'
+        }
+    })
+    carreras: Facultad[];
+    @ManyToMany(() => Requisito, (requisito) => requisito.eventos, { nullable: true })
+    @JoinTable({
+        name: 'requisito_evento',
+        joinColumn: {
+            name: 'evento_id',
+            referencedColumnName: 'id_evento'
+        },
+        inverseJoinColumn: {
+            name: 'requisito_id',
+            referencedColumnName: 'idRequisito'
+        }
+    })
+    requisitos: Requisito[];
+
 
 }

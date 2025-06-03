@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Request, ParseIntPipe } from '@nestjs/common';
 import { InscripcionService } from './inscripcion.service';
 import { CreateInscripcionDto } from './dto/create-inscripcion.dto';
 import { UpdateInscripcionDto } from './dto/update-inscripcion.dto';
@@ -8,27 +8,17 @@ export class InscripcionController {
   constructor(private readonly inscripcionService: InscripcionService) {}
 
   @Post()
-  create(@Body() createInscripcionDto: CreateInscripcionDto) {
-    return this.inscripcionService.create(createInscripcionDto);
+  create(@Body() createInscripcionDto: CreateInscripcionDto, @Request() req) {
+    return this.inscripcionService.create(createInscripcionDto, req.userUid);
   }
 
-  @Get()
-  findAll() {
-    return this.inscripcionService.findAll();
-  }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.inscripcionService.findOne(+id);
   }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateInscripcionDto: UpdateInscripcionDto) {
-    return this.inscripcionService.update(+id, updateInscripcionDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.inscripcionService.remove(+id);
+  @Patch('aprobar/:id')
+  actualizarEstado(@Param('id',ParseIntPipe) id:number,@Body() updateInscripcionDto:UpdateInscripcionDto){
+    return this.inscripcionService.actualizar(id,updateInscripcionDto);
   }
 }

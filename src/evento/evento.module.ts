@@ -6,10 +6,11 @@ import { Evento } from './entities/evento.entity';
 import { SeccionesModule } from 'src/secciones/secciones.module';
 import { FacultadModule } from 'src/facultad/facultad.module';
 import { OrganizadorModule } from 'src/organizador/organizador.module';
+import { ReporteController } from './reporte.controller';
 
 @Module({
   imports:[TypeOrmModule.forFeature([Evento]), SeccionesModule, FacultadModule,OrganizadorModule],
-  controllers: [EventoController],
+  controllers: [EventoController,ReporteController],
   providers: [EventoService],
   exports: [EventoService]
 })

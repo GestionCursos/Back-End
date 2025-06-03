@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { RequisitoInscripcionService } from './requisito_inscripcion.service';
 import { CreateRequisitoInscripcionDto } from './dto/create-requisito_inscripcion.dto';
 import { UpdateRequisitoInscripcionDto } from './dto/update-requisito_inscripcion.dto';
+import { Public } from 'src/guard/decorators/public.decorator';
 
 @Controller('requisito-inscripcion')
 export class RequisitoInscripcionController {
@@ -11,24 +12,9 @@ export class RequisitoInscripcionController {
   create(@Body() createRequisitoInscripcionDto: CreateRequisitoInscripcionDto) {
     return this.requisitoInscripcionService.create(createRequisitoInscripcionDto);
   }
-
-  @Get()
-  findAll() {
-    return this.requisitoInscripcionService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.requisitoInscripcionService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRequisitoInscripcionDto: UpdateRequisitoInscripcionDto) {
-    return this.requisitoInscripcionService.update(+id, updateRequisitoInscripcionDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.requisitoInscripcionService.remove(+id);
-  }
+  @Get('test-queries')
+  @Public()
+  async testQueries() {
+    return this.requisitoInscripcionService.printQueryResults();
+}
 }

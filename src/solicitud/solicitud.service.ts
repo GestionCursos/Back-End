@@ -70,8 +70,8 @@ export class SolicitudService {
     return resultadoPorUno;
   }
   async actualizarEstado(id: number, updateSolicitudDto: UpdateSolicitudDto) {
-    const solicitudEncontrada = await this.solicitudRepository.findOneBy({
-      idSolicitud: id,
+    const solicitudEncontrada = await this.solicitudRepository.findOne({
+      where:{idSolicitud: id},relations:["idUser"],
     });
     if (!solicitudEncontrada) {
       throw new NotFoundException('No se Encontro la Solicitud');
