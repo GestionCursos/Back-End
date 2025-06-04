@@ -12,6 +12,8 @@ import { Solicitud } from 'src/solicitud/entities/solicitud.entity';
 import { DetalleError } from 'src/detalle-error/entities/detalle-error.entity';
 import { Requisito } from 'src/requisito/entities/requisito.entity';
 import { RequisitoInscripcion } from 'src/requisito_inscripcion/entities/requisito_inscripcion.entity';
+import { Asistencia } from 'src/asistencia/entities/asistencia.entity';
+import { Nota } from 'src/asistencia/entities/nota.entity';
 
 @Module({
   imports: [
@@ -37,6 +39,8 @@ import { RequisitoInscripcion } from 'src/requisito_inscripcion/entities/requisi
         DetalleError,
         Requisito,
         RequisitoInscripcion,
+        Asistencia,
+        Nota
       ],
       synchronize: true,
       ssl: {
