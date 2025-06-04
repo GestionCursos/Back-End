@@ -1,26 +1,47 @@
 import { Injectable } from '@nestjs/common';
 import { CreateCertificadoDto } from './dto/create-certificado.dto';
-import { UpdateCertificadoDto } from './dto/update-certificado.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Certificado } from './entities/certificado.entity';
+import { Repository } from 'typeorm';
+import { InscripcionService } from 'src/inscripcion/inscripcion.service';
+import { EventoService } from 'src/evento/evento.service';
 
 @Injectable()
 export class CertificadoService {
-  create(createCertificadoDto: CreateCertificadoDto) {
-    return 'This action adds a new certificado';
+  async createMasiveCertife(certificados: { id_inscripcion: number; url: string; }[]) {
+    const certificadosAInsertar: Certificado[] = [];
+
+    for (const cert of certificados) {
+      const inscripcion = await this.inscripcionService.findOne(cert.id_inscripcion);
+      if (!inscripcion) {
+        throw new Error("Error uinesperado")
+      }
+
+      const nuevoCertificado = this.certificadoRepository.create({
+        idInscripcion: inscripcion,
+        urlCertificado: cert.url,
+      });
+
+      certificadosAInsertar.push(nuevoCertificado);
+    }
+
+    return await this.certificadoRepository.save(certificadosAInsertar);
   }
 
-  findAll() {
-    return `This action returns all certificado`;
-  }
+  constructor(
+    @InjectRepository(Certificado)
+    private readonly certificadoRepository: Repository<Certificado>,
+    private readonly inscripcionService: InscripcionService,
+    private readonly eventoService: EventoService,
+  ) { }
 
-  findOne(id: number) {
-    return `This action returns a #${id} certificado`;
-  }
+  async crearCertificados(createCertificadoDto: CreateCertificadoDto) {
+    const evento = await this.eventoService.findOneResumen(createCertificadoDto.idEvento);
+    const inscripciones = await this.inscripcionService.obtenerInscripcionesPorIdEvento(evento.id)
+    return {
+      evento,
+      inscripciones
+    }
 
-  update(id: number, updateCertificadoDto: UpdateCertificadoDto) {
-    return `This action updates a #${id} certificado`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} certificado`;
   }
 }
