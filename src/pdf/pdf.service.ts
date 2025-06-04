@@ -1,20 +1,28 @@
-
 import { Injectable } from '@nestjs/common';
 import * as PDFDocument from 'pdfkit';
 import { Response } from 'express';
 import fetch from 'node-fetch';
 import * as QRCode from 'qrcode';
+import { Writable } from 'stream';
 
 @Injectable()
 export class PdfService {
-  async generatePdf(data: any, res: Response) {
+  async generatePdf(data: any): Promise<Buffer> {
     const imageUrl = "https://scontent.fuio26-1.fna.fbcdn.net/v/t39.30808-6/311586012_528977262569685_3610733298273233828_n.png?_nc_cat=103&ccb=1-7&_nc_sid=cc71e4&_nc_ohc=Sz1IyW2rGR4Q7kNvwGotTgc&_nc_oc=AdniyXqEyMTvv2ERxDBUQMtABEommvZ80_fMP75K5MXSM64nUzpXfujjK9sRtHoU-wA&_nc_zt=23&_nc_ht=scontent.fuio26-1.fna&_nc_gid=5xwUOJG3nHbRofi4QwgT8g&oh=00_AfJfS8OW7OyMiVJLN3bVoj74yZxQaVmpytinw_BPeMj85Q&oe=6842619C";
     const doc = new PDFDocument({ size: 'A4', layout: 'landscape', margin: 40 });
 
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename=certificado.pdf');
+    // Creamos un array para ir guardando los chunks del PDF
+    const chunks: Uint8Array[] = [];
 
-    doc.pipe(res);
+    // Crear un writable stream para capturar el output del PDF en memoria
+    const stream = new Writable({
+      write(chunk, encoding, callback) {
+        chunks.push(chunk);
+        callback();
+      }
+    });
+
+    doc.pipe(stream);
 
     // Banner (imagen completa ancho, altura 80px)
     const response = await fetch(imageUrl);
@@ -74,12 +82,12 @@ export class PdfService {
     doc.fillColor('#9E1B32').font('Helvetica-Bold').fontSize(16).text('Datos del Participante', studentBoxX + 15, studentBoxY + 15);
 
     doc.font('Helvetica').fontSize(12).fillColor('#4D4D4D');
-    const inscripcion = data.inscripciones;
-    const nombreCompleto = `${inscripcion.nombres} ${inscripcion.apellidos}`;
+    const inscripcionData = data.inscripciones;
+    const nombreCompletoEstudiante = `${inscripcionData.nombres}  ${inscripcionData.apellidos}`;
 
     const detallesEstudiante = [
-      ['Nombre', nombreCompleto],
-      ['Nota', inscripcion.nota.toString()],
+      ['Nombre', nombreCompletoEstudiante],
+      ['Nota', inscripcionData.nota.toString()],
     ];
 
     let stY = studentBoxY + 45;
@@ -90,7 +98,7 @@ export class PdfService {
     });
 
     // Frase de certificación en caja centrada
-    const certText = `Por medio del presente, se certifica que ${nombreCompleto} ha participado exitosamente en el evento "${evento.nombre}".`;
+    const certText = `Por medio del presente, se certifica que ${nombreCompletoEstudiante} ha participado exitosamente en el evento "${evento.nombre}".`;
     const certBoxWidth = doc.page.width - 100;
     const certBoxHeight = 80;
     const certBoxX = 50;
@@ -108,7 +116,7 @@ export class PdfService {
 
 
     // Generar código QR con la URL o texto que desees (por ejemplo, info del certificado o link de validación)
-    const qrData = process.env.URL_VERIFICAR_CERTIFICADO;
+    const qrData = ` https://www.tu-url.com`;
     const qrImageBuffer = await QRCode.toBuffer(qrData, { type: 'png', margin: 1, width: 100 });
 
     const qrX = 50;
@@ -133,5 +141,15 @@ export class PdfService {
       .text(`Ambato, Ecuador - ${new Date().toLocaleDateString()}`, signatureX + 10, signatureY + 30);
 
     doc.end();
+
+    // Esperar a que el stream termine de escribir
+    await new Promise<void>((resolve) => {
+      stream.on('finish', () => {
+        resolve();
+      });
+    });
+
+    // Concatenar todos los chunks en un único buffer
+    return Buffer.concat(chunks);
   }
 }
