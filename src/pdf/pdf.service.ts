@@ -74,7 +74,7 @@ export class PdfService {
     doc.fillColor('#9E1B32').font('Helvetica-Bold').fontSize(16).text('Datos del Participante', studentBoxX + 15, studentBoxY + 15);
 
     doc.font('Helvetica').fontSize(12).fillColor('#4D4D4D');
-    const inscripcion = data.inscripciones[0];
+    const inscripcion = data.inscripciones;
     const nombreCompleto = `${inscripcion.nombres} ${inscripcion.apellidos}`;
 
     const detallesEstudiante = [
@@ -108,7 +108,7 @@ export class PdfService {
 
 
     // Generar código QR con la URL o texto que desees (por ejemplo, info del certificado o link de validación)
-    const qrData = ` https://www.tu-url.com`;
+    const qrData = process.env.URL_VERIFICAR_CERTIFICADO;
     const qrImageBuffer = await QRCode.toBuffer(qrData, { type: 'png', margin: 1, width: 100 });
 
     const qrX = 50;
