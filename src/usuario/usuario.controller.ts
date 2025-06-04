@@ -11,7 +11,11 @@ export class UsuarioController {
   create(@Body() createUsuarioDto: CreateUsuarioDto, @Request() rec) {
     return this.usuarioService.create(createUsuarioDto, rec.userUid);
   }
-
+  @Get('dashboard')
+  getDashboardData(@Request() req) {
+    const uid = req.userUid;
+    return this.usuarioService.getDashboardData(uid);
+  }
   @Get('evento/:id')
   findAll(@Param('id') id: number) {
     return this.usuarioService.findUsuariosPorEvento(id);
@@ -26,7 +30,7 @@ export class UsuarioController {
   remove(@Param('id') id: string) {
     return this.usuarioService.remove(id);
   }
-  
+
   @Get('rol')
   findByRol(@Request() req) {
     console.log(req.userUid)

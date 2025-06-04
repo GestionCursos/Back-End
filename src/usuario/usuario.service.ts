@@ -8,6 +8,72 @@ import { FacultadService } from 'src/facultad/facultad.service';
 
 @Injectable()
 export class UsuarioService {
+  async getDashboardData(uid: string) {
+    // 1. Obtener usuario
+    const usuario = await this.usuarioRepository.findOne({
+      where: { uid_firebase: uid },
+      relations: ['idCarrera'],
+    });
+
+    if (!usuario) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+   
+    
+    // 3. Obtener eventos inscritos con detalle
+    const eventosInscritos = await this.dataSource.query(
+      `
+    SELECT 
+      i.id_inscripcion,
+      i.id_evento,
+      json_build_object(
+        'id_evento', e.id_evento,
+        'nombre', e.nombre,
+        'tipo_evento', e.tipo_evento,
+        'fecha_inicio', e.fecha_inicio,
+        'fecha_fin', e.fecha_fin,
+        'modalidad', e.modalidad,
+        'num_horas', e.numero_horas,
+        'costo', e.costo,
+        'categoria_area', e.categoria,
+        'descripcion', e.descripcion,
+        'url_foto', e.url_foto
+      ) AS evento,
+      i.fecha_inscripcion,
+      i.estado_inscripcion,
+      o.nombre as organizador,
+      n.nota ,
+      a.porcentaje_asistencia
+    FROM "Inscripciones" i
+    INNER JOIN "Eventos" e ON e.id_evento = i.id_evento
+    inner join "Organizador" o  on e.id_organizador =o.id_organizador
+    inner join notas n  on n.id_inscripcion =i.id_inscripcion
+    inner join asistencias a  on a.id_inscripcion = i.id_inscripcion
+    WHERE i.id_usuario = $1
+    `,
+      [uid],
+    );
+
+    // 4. Devolver el JSON final
+    return {
+      user: {
+        uid_firebase: usuario.uid_firebase,
+        nombres: usuario.nombres,
+        apellidos: usuario.apellidos,
+        correo: usuario.correo,
+        cedula: "151351351351",
+        telefono: usuario.telefono,
+        direccion: usuario.direccion,
+        rol: usuario.rol,
+        carrera: usuario.idCarrera?.nombre ?? null,
+        estado: usuario.estado,
+        url_foto: usuario.url_foto ?? '/placeholder-user.jpg',
+      },
+      eventosInscritos,
+    };
+  }
+
   constructor(
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,

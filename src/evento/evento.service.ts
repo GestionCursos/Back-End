@@ -172,5 +172,26 @@ export class EventoService {
     }
     return data;
   }
+
+async obtenerRecientes(): Promise<any[]> {
+  const eventos = await this.eventoRepository.find({
+    where: { visible: true },
+    order: { fechaInicio: 'DESC' },
+    relations: ['idOrganizador'],
+    take: 5,
+  });
+
+  return eventos.map(evento => ({
+    id_evento: evento.id_evento,
+    nombre: evento.nombre,
+    tipo_evento: evento.tipoEvento,
+    fecha_inicio: evento.fechaInicio,
+    fecha_fin: evento.fechaFin,
+    modalidad: evento.modalidad,
+    url_foto: evento.urlFoto,
+    organizador: evento.idOrganizador?.nombre ?? 'Desconocido',
+  }));
+}
+
 }
 
