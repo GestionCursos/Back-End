@@ -1,3 +1,4 @@
+import { Nota } from "src/asistencia/entities/nota.entity";
 import { Certificado } from "src/certificado/entities/certificado.entity";
 import { Evento } from "src/evento/entities/evento.entity";
 import { Usuario } from "src/usuario/entities/usuario.entity";
@@ -13,10 +14,13 @@ export class Inscripcion {
     @ManyToOne(() => Evento, (evento) => evento.id_evento)
     @JoinColumn({ name: "id_evento" })
     evento: Evento
-    @Column({ name: "fecha_inscripcion"})
+    @Column({ name: "fecha_inscripcion" })
     fechaInscripcion: Date;
-    @Column({ default: "Pendiente", name: "estado_inscripcion"})
+    @Column({ default: "Pendiente", name: "estado_inscripcion" })
     estadoInscripcion: string
     @OneToOne(() => Certificado, (certificado) => certificado.idInscripcion)
-    certificado: Certificado;
+    certificado: Certificado;
+    @OneToOne(() => Nota, (nota) => nota.idInscripcion)
+    nota: Nota;
+
 }
