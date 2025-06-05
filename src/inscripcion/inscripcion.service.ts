@@ -17,14 +17,17 @@ export class InscripcionService {
 
   ) { }
   async create(createInscripcionDto: CreateInscripcionDto, uid_firebase: string) {
+
     const user = await this.usuarioService.findOne(uid_firebase);
-    const evento = await this.eventoService.findOneApi(createInscripcionDto.evento);
+    const evento = await this.eventoService.findOne(createInscripcionDto.evento);
+    console.log(evento)
     const inscripcionPreparado = this.inscripcionRepository.create({
       fechaInscripcion: new Date,
       evento: evento,
       usuario: user,
     })
     const carraresEvento = evento.carreras.map((carrera) => carrera.nombre)
+    console.log(carraresEvento)
     if (carraresEvento.length !== 0) {
       if (evento.carreras) {
         if (!carraresEvento.includes(user.idCarrera.nombre)) {
