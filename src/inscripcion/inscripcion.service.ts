@@ -65,9 +65,11 @@ export class InscripcionService {
       .innerJoin('inscripcion.evento', 'evento')
       .innerJoin('inscripcion.nota', 'nota')
       .innerJoin('inscripcion.usuario', 'usuario')
+      .leftJoin('inscripcion.certificado', 'certificado') 
       .where('evento.id_evento=:id', { id })
-      .andWhere('inscripcion.estado_inscripcion =:estado',{estado:'Aprobado'})
-      .select(['inscripcion.id_inscripcion', 'nota.nota as nota', 'usuario.nombres as nombres','usuario.apellidos as apellidos','usuario.uid_firebase as uid_firebase'])
+      .andWhere('inscripcion.estado_inscripcion =:estado', { estado: 'Aprobado' })
+      .andWhere('certificado.id_certificado IS NULL') 
+      .select(['inscripcion.id_inscripcion', 'nota.nota as nota', 'usuario.nombres as nombres', 'usuario.apellidos as apellidos', 'usuario.uid_firebase as uid_firebase'])
       .getRawMany();
     return inscripcionesDeEvento;
   }

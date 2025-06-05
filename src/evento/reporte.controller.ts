@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
 import { EventoService } from './evento.service';
 import { Public } from 'src/guard/decorators/public.decorator';
 
@@ -11,8 +11,12 @@ export class ReporteController {
     return this.eventoService.obtenerRecientes();
   }
   @Get(':id')
-  obtenerReporteCurso(@Param('id') id: number) {
+  obtenerReporteCurso(@Param('id',ParseIntPipe) id: number) {
     return this.eventoService.reporteCurso(id);
+  }
+  @Get('organizador/:id')
+  obtenerReportePorOrganizador(@Param('id',ParseIntPipe) id: number) {
+    return this.eventoService.reporteOrganizador(id);
   }
   @Get()
   obtenerEventosDisponibles(){

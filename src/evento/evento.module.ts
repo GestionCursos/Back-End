@@ -7,9 +7,10 @@ import { SeccionesModule } from 'src/secciones/secciones.module';
 import { FacultadModule } from 'src/facultad/facultad.module';
 import { OrganizadorModule } from 'src/organizador/organizador.module';
 import { ReporteController } from './reporte.controller';
+import { RequisitoModule } from 'src/requisito/requisito.module';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Evento]), SeccionesModule, FacultadModule,OrganizadorModule],
+  imports:[TypeOrmModule.forFeature([Evento]), SeccionesModule, FacultadModule,OrganizadorModule,RequisitoModule],
   controllers: [EventoController,ReporteController],
   providers: [EventoService],
   exports: [EventoService]
