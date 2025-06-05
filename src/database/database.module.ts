@@ -14,6 +14,7 @@ import { Requisito } from 'src/requisito/entities/requisito.entity';
 import { RequisitoInscripcion } from 'src/requisito_inscripcion/entities/requisito_inscripcion.entity';
 import { Asistencia } from 'src/asistencia/entities/asistencia.entity';
 import { Nota } from 'src/asistencia/entities/nota.entity';
+import { RegistroAprobacion } from 'src/registro-aprobacion/entities/registro-aprobacion.entity';
 
 @Module({
   imports: [
@@ -40,7 +41,8 @@ import { Nota } from 'src/asistencia/entities/nota.entity';
         Requisito,
         RequisitoInscripcion,
         Asistencia,
-        Nota
+        Nota,
+        RegistroAprobacion,
       ],
       synchronize: true,
       ssl: {
