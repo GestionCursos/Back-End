@@ -1,6 +1,7 @@
 import { Inscripcion } from "src/inscripcion/entities/inscripcion.entity";
-import { Column, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
+@Entity('asistencias')
 export class Asistencia {
     @PrimaryGeneratedColumn({ name: "id_asistencia" })
     idAsistencia: number;
