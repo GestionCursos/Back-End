@@ -26,12 +26,12 @@ export class CreateEventoDto {
     @IsNumber()
     @IsNotEmpty()
     numeroHoras: number;
+    @IsOptional()
     @IsNumber()
-    @IsNotEmpty()
     notaAprovacion: number;
-    @IsBoolean()
-    @IsNotEmpty()
-    requiereAsistencia: boolean;
+    @IsNumber()
+    @IsOptional()
+    requiereAsistencia: number;
     @IsString()
     @IsNotEmpty()
     urlFoto: string;
