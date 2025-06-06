@@ -172,4 +172,16 @@ export class UsuarioService {
     }
     return result[0].resultado;
   }
+
+  async getUsuariosAdmin() {
+    const users = await this.usuarioRepository.find({
+      where: { rol: 'admin2' },
+      select: ['uid_firebase', 'nombres', 'apellidos', 'correo', 'telefono']
+    })
+
+    if (!users) {
+      throw new NotFoundException('No se encontraron usuarios administradores');
+    }
+    return users;
+  }
 }
