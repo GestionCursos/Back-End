@@ -174,14 +174,18 @@ export class UsuarioService {
   }
 
   async getUsuariosAdmin() {
-    const users = await this.usuarioRepository.find({
+    const usersAdmin = await this.usuarioRepository.find({
       where: { rol: 'admin2' },
       select: ['uid_firebase', 'nombres', 'apellidos', 'correo', 'telefono']
     })
 
-    if (!users) {
+    const usersDesarrolladores = await this.usuarioRepository.find({
+      where: { rol: 'desarrollador' },
+      select: ['uid_firebase', 'nombres', 'apellidos', 'correo', 'telefono']
+    })
+    if (!usersAdmin || !usersDesarrolladores) {
       throw new NotFoundException('No se encontraron usuarios administradores');
     }
-    return users;
+    return { usersAdmin, usersDesarrolladores };
   }
 }
