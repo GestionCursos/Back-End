@@ -18,16 +18,17 @@ export class EventoController {
   findAll() {
     return this.eventoService.findAll();
   }
+  @Get('populares')
+  @Public()
+  findPopulares() {
+    return this.eventoService.getEventosPopulares();
+  }
 
   @Get(':id')
   findOne(@Param('id') id: number) {
     return this.eventoService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: number, @Body() updateEventoDto: UpdateEventoDto) {
-    return this.eventoService.update(id, updateEventoDto);
-  }
 
   @Delete(':id')
   remove(@Param('id') id: number) {
