@@ -24,10 +24,10 @@ export class Evento {
     categoria: string;
     @Column({ name: "numero_horas", default: 0 })
     numeroHoras: number;
-    @Column({ name: "nota_aprovacion" })
+    @Column({ name: "nota_aprovacion", nullable: true })
     notaAprovacion: number;
-    @Column({ name: "requiere_asistencia" })
-    requiereAsistencia: boolean;
+    @Column({ name: "requiere_asistencia", nullable: true })
+    requiereAsistencia: number;
     @Column({ name: "url_foto" })
     urlFoto: string;
     @Column()
@@ -37,6 +37,8 @@ export class Evento {
     @ManyToOne(() => Organizador, (organizador) => organizador.id)
     @JoinColumn({ name: "id_organizador" })
     idOrganizador: Organizador;
+    @Column({ name: "estado", default: "Activo" })
+    estado: string;
 
     @ManyToOne(() => Seccione, (seccion) => seccion.id_seccion)
     @JoinColumn({ name: "id_seccion" })

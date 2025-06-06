@@ -32,7 +32,7 @@ export class PdfService {
     doc.image(imageBuffer, 0, 0, { width: doc.page.width, height: 80 });
 
     // Título sobre el banner con sombra
-    const title = 'CERTIFICADO DE PARTICIPACIÓN';
+    const title = `CERTIFICADO DE ${data.inscripciones.nota ? "APROBACION" : "PARTICIPACIÓN"} `;
     const titleX = doc.page.width / 4;
     const titleY = 90;
 
@@ -84,11 +84,18 @@ export class PdfService {
     doc.font('Helvetica').fontSize(12).fillColor('#4D4D4D');
     const inscripcionData = data.inscripciones;
     const nombreCompletoEstudiante = `${inscripcionData.nombres}  ${inscripcionData.apellidos}`;
+    let detallesEstudiante;
+    if (data.inscripciones.nota) {
+      detallesEstudiante = [
+        ['Nombre', nombreCompletoEstudiante],
+        ['Nota', inscripcionData.nota.toString()],
+      ];
 
-    const detallesEstudiante = [
-      ['Nombre', nombreCompletoEstudiante],
-      ['Nota', inscripcionData.nota.toString()],
-    ];
+    } else {
+      detallesEstudiante = [
+        ['Nombre', nombreCompletoEstudiante],
+      ];
+    }
 
     let stY = studentBoxY + 45;
     detallesEstudiante.forEach(([label, val]) => {
@@ -98,7 +105,7 @@ export class PdfService {
     });
 
     // Frase de certificación en caja centrada
-    const certText = `Por medio del presente, se certifica que ${nombreCompletoEstudiante} ha participado exitosamente en el evento "${evento.nombre}".`;
+    const certText = `Por medio del presente, se certifica que ${nombreCompletoEstudiante} ha ${inscripcionData.nota ? "aprobado" : "participado"}  exitosamente en el ${evento.seccionNombre} - "${evento.nombre}".`;
     const certBoxWidth = doc.page.width - 100;
     const certBoxHeight = 80;
     const certBoxX = 50;
@@ -113,20 +120,14 @@ export class PdfService {
       lineGap: 6
     });
 
-
-
     // Generar código QR con la URL o texto que desees (por ejemplo, info del certificado o link de validación)
-    const qrData = ` https://www.tu-url.com`;
+    const qrData = process.env.URL_VERIFICAR_CERTIFICADO + `?id_inscripcion=${data.inscripciones.id_inscripcion}`;
     const qrImageBuffer = await QRCode.toBuffer(qrData, { type: 'png', margin: 1, width: 100 });
 
     const qrX = 50;
     const qrY = certBoxY + certBoxHeight + 30;
     const qrSize = 100;
     doc.image(qrImageBuffer, qrX, qrY, { width: qrSize, height: qrSize });
-
-
-
-
 
 
     const signatureX = doc.page.width - 240;

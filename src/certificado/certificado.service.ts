@@ -24,7 +24,6 @@ export class CertificadoService {
 
       certificadosAInsertar.push(nuevoCertificado);
     }
-
     return await this.certificadoRepository.save(certificadosAInsertar);
   }
 
@@ -38,6 +37,7 @@ export class CertificadoService {
   async crearCertificados(createCertificadoDto: CreateCertificadoDto) {
     const evento = await this.eventoService.findOneResumen(createCertificadoDto.idEvento);
     const inscripciones = await this.inscripcionService.obtenerInscripcionesPorIdEvento(evento.id)
+    await this.eventoService.update(createCertificadoDto.idEvento)
     return {
       evento,
       inscripciones

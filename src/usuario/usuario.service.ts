@@ -5,6 +5,7 @@ import { Usuario } from './entities/usuario.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { FacultadService } from 'src/facultad/facultad.service';
+import { Facultad } from 'src/facultad/entities/facultad.entity';
 
 @Injectable()
 export class UsuarioService {
@@ -19,8 +20,6 @@ export class UsuarioService {
       throw new NotFoundException('Usuario no encontrado');
     }
 
-   
-    
     // 3. Obtener eventos inscritos con detalle
     const eventosInscritos = await this.dataSource.query(
       `
@@ -82,7 +81,10 @@ export class UsuarioService {
   ) { }
 
   async create(createUsuarioDto: CreateUsuarioDto, Uid: string) {
-    const carrera = await this.carreraService.findByNombre(createUsuarioDto.carrera);
+    let carrera: Facultad | null = null;
+    if (createUsuarioDto.carrera) {
+      carrera = await this.carreraService.findByNombre(createUsuarioDto.carrera);
+    }
 
     const usuario = this.usuarioRepository.create(createUsuarioDto);
     usuario.uid_firebase = Uid
@@ -136,24 +138,50 @@ export class UsuarioService {
   async findUsuariosPorEvento(idEvento: number) {
     const result = await this.dataSource.query(
       `
-      select
-      	i.id_inscripcion as id,
-        (u.nombres || ' ' || u.apellidos)as nombre
-      from
-        "Usuarios" u
-      inner join "Inscripciones" i on
-        u.uid_firebase = i.id_usuario
-      inner join "Eventos" e on
-        e.id_evento = i.id_evento
-        full join notas n 
-        on n.id_inscripcion =i.id_inscripcion
-      where
-        e.id_evento = $1
-        and i.estado_inscripcion = 'Aprobado'
-        and n.nota is null;
+      SELECT jsonb_build_object(
+        'nota_aprovacion', e.nota_aprovacion,
+        'requiere_asistencia', e.requiere_asistencia,
+        'usuarios', jsonb_agg(
+          jsonb_build_object(
+            'id', i.id_inscripcion,
+            'nombre', u.nombres || ' ' || u.apellidos
+          )
+        )
+      ) AS resultado
+      FROM "Usuarios" u
+      INNER JOIN "Inscripciones" i ON u.uid_firebase = i.id_usuario
+      INNER JOIN "Eventos" e ON e.id_evento = i.id_evento
+      LEFT JOIN notas n ON n.id_inscripcion = i.id_inscripcion
+      WHERE e.id_evento = $1
+        AND i.estado_inscripcion = 'Aprobado'
+        AND n.nota IS NULL
+        AND NOT EXISTS (
+          SELECT 1 FROM asistencias a WHERE a.id_inscripcion = i.id_inscripcion AND a.porcentaje_asistencia IS NOT NULL
+        )
+      GROUP BY e.nota_aprovacion, e.requiere_asistencia;
         `,
       [idEvento]
     );
-    return result;
+
+    if (result.length === 0 || !result[0]?.resultado) {
+      return {
+        usuarios: [],
+        nota_aprovacion: null,
+        requiere_asistencia: false
+      };
+    }
+    return result[0].resultado;
+  }
+
+  async getUsuariosAdmin() {
+    const users = await this.usuarioRepository.find({
+      where: { rol: 'admin2' },
+      select: ['uid_firebase', 'nombres', 'apellidos', 'correo', 'telefono']
+    })
+
+    if (!users) {
+      throw new NotFoundException('No se encontraron usuarios administradores');
+    }
+    return users;
   }
 }

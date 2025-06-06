@@ -15,15 +15,19 @@ export class AsistenciaService {
     private readonly notaRepository: Repository<Nota>
   ) { }
   async create(createAsistenciaDto: CreateAsistenciaDto) {
-    const nota = await this.notaRepository.save({
-      nota: createAsistenciaDto.nota,
-      idInscripcion: createAsistenciaDto.idInscripcion
+    if (createAsistenciaDto.nota) {
+      const nota = await this.notaRepository.save({
+        nota: createAsistenciaDto.nota,
+        idInscripcion: createAsistenciaDto.idInscripcion
 
-    })
-    const asistencia = await this.asistenciaRepository.save({
-      idInscripcion: createAsistenciaDto.idInscripcion,
-      porcentajeAsistencia: createAsistenciaDto.asistencia
-    })
+      })
+    }
+    if (createAsistenciaDto.asistencia) {
+      const asistencia = await this.asistenciaRepository.save({
+        idInscripcion: createAsistenciaDto.idInscripcion,
+        porcentajeAsistencia: createAsistenciaDto.asistencia
+      })
+    }
     return true;
   }
 

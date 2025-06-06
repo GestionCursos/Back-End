@@ -53,7 +53,9 @@ export class EventoService {
       .select([
         'evento.id_evento AS id_evento',
         'evento.nombre AS nombre',
-        'organizador.nombre AS organizador',
+        'evento.urlFoto AS urlFoto',
+        'organizador.nombre AS organizador', 
+        'evento.numeroHoras AS duracion',
         'COUNT(inscripcion.evento) AS estudiantes'
       ])
       .groupBy('evento.id_evento,organizador.nombre')
@@ -67,6 +69,8 @@ export class EventoService {
       .createQueryBuilder('evento')
       .innerJoin('Inscripciones', 'inscripcion', 'inscripcion.evento = evento.id_evento')
       .where('evento.visible = :visible', { visible: true })
+      .andWhere('evento.estado = :estado', { estado: 'Activo' })
+      .andWhere('(evento.nota_aprovacion IS NOT NULL OR evento.requiere_asistencia IS NOT NULL)')
       .select(['evento.id_evento', 'evento.nombre'])
       .groupBy('evento.id_evento')
       .getRawMany();
@@ -127,43 +131,15 @@ export class EventoService {
     return evento;
   }
 
-  async update(id: number, updateEventoDto: UpdateEventoDto) {
+  async update(id: number) {
     const eventoEncontrado = await this.eventoRepository.findOne({ where: { id_evento: id } });
     if (!eventoEncontrado) {
       throw new NotFoundException(`Evento con id ${id} no encontrado`);
     }
 
-    // Verificar si se desea actualizar las facultades
-    if (updateEventoDto.facultades) {
-      const facultades = await this.facultadService.findByIds(updateEventoDto.facultades);
-      if (!facultades) {
-        throw new NotFoundException(`Facultades con ids ${updateEventoDto.facultades} no encontradas`);
-      }
-      // Asignar las nuevas facultades al evento
-      eventoEncontrado.carreras = facultades;
-    }
+    eventoEncontrado.estado = "Finalizado";
+    await this.eventoRepository.save(eventoEncontrado);
 
-    if (updateEventoDto.idSeccion) {
-      const secciones = await this.seccionesService.findOne(updateEventoDto.idSeccion);
-      if (!secciones) {
-        throw new NotFoundException(`Sección con id ${updateEventoDto.idSeccion} no encontrada`);
-      }
-      // Asignar la nueva sección al evento
-      eventoEncontrado.idSeccion = secciones;
-    }
-
-    // Verificar si se desea actualizar el organizador
-    if (updateEventoDto.idOrganizador) {
-      const organizador = await this.organizadorService.findOne(updateEventoDto.idOrganizador);
-      if (!organizador) {
-        throw new NotFoundException(`Organizador con id ${updateEventoDto.idOrganizador} no encontrado`);
-      }
-      // Asignar el nuevo organizador al evento
-      eventoEncontrado.idOrganizador = organizador;
-    }
-    // Actualizar los campos restantes directamente desde el DTO
-    Object.assign(eventoEncontrado, updateEventoDto);
-    return this.eventoRepository.save(eventoEncontrado);
   }
 
 
@@ -234,7 +210,7 @@ export class EventoService {
     if (!evento) throw new NotFoundException("No se encontró el evento buscado");
 
     return {
-      id:evento.id_evento,
+      id: evento.id_evento,
       nombre: evento.nombre,
       tipoEvento: evento.tipoEvento,
       numeroHoras: evento.numeroHoras,
@@ -245,25 +221,25 @@ export class EventoService {
       seccionNombre: evento.idSeccion.nombre,
     };
   }
-async obtenerRecientes(): Promise<any[]> {
-  const eventos = await this.eventoRepository.find({
-    where: { visible: true },
-    order: { fechaInicio: 'DESC' },
-    relations: ['idOrganizador'],
-    take: 5,
-  });
+  async obtenerRecientes(): Promise<any[]> {
+    const eventos = await this.eventoRepository.find({
+      where: { visible: true },
+      order: { fechaInicio: 'DESC' },
+      relations: ['idOrganizador'],
+      take: 5,
+    });
 
-  return eventos.map(evento => ({
-    id_evento: evento.id_evento,
-    nombre: evento.nombre,
-    tipo_evento: evento.tipoEvento,
-    fecha_inicio: evento.fechaInicio,
-    fecha_fin: evento.fechaFin,
-    modalidad: evento.modalidad,
-    url_foto: evento.urlFoto,
-    organizador: evento.idOrganizador?.nombre ?? 'Desconocido',
-  }));
-}
+    return eventos.map(evento => ({
+      id_evento: evento.id_evento,
+      nombre: evento.nombre,
+      tipo_evento: evento.tipoEvento,
+      fecha_inicio: evento.fechaInicio,
+      fecha_fin: evento.fechaFin,
+      modalidad: evento.modalidad,
+      url_foto: evento.urlFoto,
+      organizador: evento.idOrganizador?.nombre ?? 'Desconocido',
+    }));
+  }
 
 }
 

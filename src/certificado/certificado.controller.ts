@@ -15,11 +15,10 @@ export class CertificadoController {
     private readonly pdfService: PdfService,
   ) { }
 
-  @Get()
+  @Post()
   async generarCertificados(@Body() createCertificadoDto: CreateCertificadoDto) {
     const certificados: { id_inscripcion: number; url: string }[] = [];
     const data = await this.certificadoService.crearCertificados(createCertificadoDto);
-    console.log('Datos para generar PDF:', data);
     if (!data.inscripciones || data.inscripciones.length === 0) {
       throw new NotFoundException('No hay inscripciones aprobadas para este evento');
     }
@@ -32,7 +31,7 @@ export class CertificadoController {
       const pdfBuffer = await this.pdfService.generatePdf(da);
 
       // Nombre del archivo en Firebase Storage
-      const filename = `certificados/certificado_${da.inscripciones.id_inscripcion}.pdf`; // carpeta + nombre único
+      const filename = `certificados/certificado_${da.inscripciones.id_inscripcion}_2.pdf`; // carpeta + nombre único
 
       // Subir buffer a Firebase Storage
       const publicUrl = await this.firebaseService.uploadFile(pdfBuffer, filename, 'application/pdf');

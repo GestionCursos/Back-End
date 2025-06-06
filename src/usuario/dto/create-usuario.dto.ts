@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateUsuarioDto {
 
@@ -26,6 +26,7 @@ export class CreateUsuarioDto {
   @IsNotEmpty()
   rol: string;
 
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
   carrera: string;
