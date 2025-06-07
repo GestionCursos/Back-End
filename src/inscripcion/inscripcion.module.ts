@@ -5,12 +5,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Inscripcion } from './entities/inscripcion.entity';
 import { UsuarioModule } from 'src/usuario/usuario.module';
 import { EventoModule } from 'src/evento/evento.module';
+import { RequisitoInscripcionModule } from 'src/requisito_inscripcion/requisito_inscripcion.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Inscripcion]),
     UsuarioModule,
     EventoModule,
+    RequisitoInscripcionModule
   ],
   controllers: [InscripcionController],
   providers: [InscripcionService],
