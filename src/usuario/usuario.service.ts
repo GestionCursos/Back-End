@@ -47,13 +47,26 @@ export class UsuarioService {
     FROM "Inscripciones" i
     INNER JOIN "Eventos" e ON e.id_evento = i.id_evento
     inner join "Organizador" o  on e.id_organizador =o.id_organizador
-    inner join notas n  on n.id_inscripcion =i.id_inscripcion
-    inner join asistencias a  on a.id_inscripcion = i.id_inscripcion
+    full join notas n  on n.id_inscripcion =i.id_inscripcion
+    full join asistencias a  on a.id_inscripcion = i.id_inscripcion
     WHERE i.id_usuario = $1
     `,
       [uid],
     );
 
+    const certificados = await this.dataSource.query(`
+      select
+        count(*)
+      from
+        certificados c
+      inner join "Inscripciones" i on
+        c.id_inscripcion = i.id_inscripcion
+      inner join "Usuarios" u on
+        u.uid_firebase = i.id_usuario
+      where
+        u.uid_firebase = $1;
+
+      `, [uid]);
     // 4. Devolver el JSON final
     return {
       user: {
@@ -68,6 +81,7 @@ export class UsuarioService {
         carrera: usuario.idCarrera?.nombre ?? null,
         estado: usuario.estado,
         url_foto: usuario.url_foto ?? '/placeholder-user.jpg',
+        certificados: certificados[0].count || 0,
       },
       eventosInscritos,
     };
@@ -174,14 +188,33 @@ export class UsuarioService {
   }
 
   async getUsuariosAdmin() {
-    const users = await this.usuarioRepository.find({
+    const usersAdmin = await this.usuarioRepository.find({
       where: { rol: 'admin2' },
       select: ['uid_firebase', 'nombres', 'apellidos', 'correo', 'telefono']
     })
 
-    if (!users) {
+    const usersDesarrolladores = await this.usuarioRepository.find({
+      where: { rol: 'desarrollador' },
+      select: ['uid_firebase', 'nombres', 'apellidos', 'correo', 'telefono']
+    })
+    if (!usersAdmin || !usersDesarrolladores) {
       throw new NotFoundException('No se encontraron usuarios administradores');
     }
-    return users;
+    return { usersAdmin, usersDesarrolladores };
+  }
+  async usuarioEstaInscritoEnEvento(uid: string, idEvento: number) {
+    const inscripcion = await this.dataSource.query(
+      `
+      SELECT i.id_inscripcion
+      FROM "Inscripciones" i
+      INNER JOIN "Eventos" e ON e.id_evento = i.id_evento
+      WHERE i.id_usuario = $1 AND e.id_evento = $2
+      `,
+      [uid, idEvento]
+    );
+    console.log(inscripcion);
+    if (inscripcion.length > 0) {
+      throw new NotFoundException("El usuario ya se encuentra inscrito en este evento");
+    }
   }
 }
