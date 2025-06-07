@@ -202,4 +202,19 @@ export class UsuarioService {
     }
     return { usersAdmin, usersDesarrolladores };
   }
+  async usuarioEstaInscritoEnEvento(uid: string, idEvento: number) {
+    const inscripcion = await this.dataSource.query(
+      `
+      SELECT i.id_inscripcion
+      FROM "Inscripciones" i
+      INNER JOIN "Eventos" e ON e.id_evento = i.id_evento
+      WHERE i.id_usuario = $1 AND e.id_evento = $2
+      `,
+      [uid, idEvento]
+    );
+    console.log(inscripcion);
+    if (inscripcion.length > 0) {
+      throw new NotFoundException("El usuario ya se encuentra inscrito en este evento");
+    }
+  }
 }
