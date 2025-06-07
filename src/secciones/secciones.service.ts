@@ -20,7 +20,7 @@ export class SeccionesService {
 
   async findAll() {
     const listaSecciones = await this.seccioneRepositiry.find({
-      relations: ['eventos'],
+      relations: ['eventos', 'eventos.requisitos'],
     });
     return listaSecciones;
   }

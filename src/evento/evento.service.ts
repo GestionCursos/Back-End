@@ -118,7 +118,7 @@ export class EventoService {
   async findOne(id: number) {
     const evento = await this.eventoRepository.findOne({
       where: { id_evento: id },
-      relations: ['carreras', 'idSeccion', 'idOrganizador'],
+      relations: ['carreras', 'idSeccion', 'idOrganizador','requisitos'],
     });
     if (!evento) throw new NotFoundException("No se encontro el evento buscado")
     return evento;
@@ -242,4 +242,3 @@ export class EventoService {
   }
 
 }
-
