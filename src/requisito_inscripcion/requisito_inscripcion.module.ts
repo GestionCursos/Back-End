@@ -4,11 +4,11 @@ import { RequisitoInscripcionController } from './requisito_inscripcion.controll
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RequisitoInscripcion } from './entities/requisito_inscripcion.entity';
 import { RequisitoModule } from 'src/requisito/requisito.module';
-import { InscripcionModule } from 'src/inscripcion/inscripcion.module';
 
 @Module({
   controllers: [RequisitoInscripcionController],
-  imports: [TypeOrmModule.forFeature([RequisitoInscripcion]),RequisitoModule,InscripcionModule],
+  imports: [TypeOrmModule.forFeature([RequisitoInscripcion]),RequisitoModule],
   providers: [RequisitoInscripcionService],
+  exports: [RequisitoInscripcionService],
 })
 export class RequisitoInscripcionModule {}

@@ -8,10 +8,6 @@ import { Public } from 'src/guard/decorators/public.decorator';
 export class RequisitoInscripcionController {
   constructor(private readonly requisitoInscripcionService: RequisitoInscripcionService) {}
 
-  @Post()
-  create(@Body() createRequisitoInscripcionDto: CreateRequisitoInscripcionDto) {
-    return this.requisitoInscripcionService.create(createRequisitoInscripcionDto);
-  }
   @Get('test-queries')
   @Public()
   async testQueries() {
