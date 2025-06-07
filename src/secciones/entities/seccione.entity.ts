@@ -1,5 +1,5 @@
 import { Evento } from 'src/evento/entities/evento.entity';
-import { Column, Entity, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, DeleteDateColumn, Entity, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 @Entity("Secciones")
 export class Seccione {
   @PrimaryGeneratedColumn()
@@ -10,8 +10,9 @@ export class Seccione {
   descripcion: string;
   @Column()
   icono_url: string;
-  @Column()
-  orden: number;
+
   @OneToMany(()=>Evento,(evento)=>evento.idSeccion)
   eventos:Evento[]
+  @DeleteDateColumn({ name: 'fecha_eliminacion', nullable: true, default: null })
+  fechaEliminacion?: Date;
 }

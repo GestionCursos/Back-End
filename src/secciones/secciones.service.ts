@@ -38,7 +38,7 @@ export class SeccionesService {
   }
 
   async remove(id: number) {
-    await this.seccioneRepositiry.delete(id);
+    await this.seccioneRepositiry.softDelete(id);
     return true;
   }
 

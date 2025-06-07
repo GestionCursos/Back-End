@@ -9,10 +9,6 @@ export class CreateSeccioneDto {
   @IsNotEmpty()
   @IsString()
   icono_url: string;
-  @IsNotEmpty()
-  @IsNumber()
-  orden: number;
-  @IsNotEmpty()
-  @IsBoolean()
-  visible: boolean;
+
+  
 }
