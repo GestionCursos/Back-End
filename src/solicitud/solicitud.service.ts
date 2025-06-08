@@ -12,10 +12,10 @@ export class SolicitudService {
     @InjectRepository(Solicitud)
     private readonly solicitudRepository: Repository<Solicitud>,
     private readonly usuarioService: UsuarioService,
-  ) {}
-  async create(createSolicitudDto: CreateSolicitudDto) {
+  ) { }
+  async create(createSolicitudDto: CreateSolicitudDto, userUid?: string) {
     const usuarioEncontrado = await this.usuarioService.findOne(
-      createSolicitudDto.idUser,
+      userUid !== null && userUid !== undefined ? userUid : createSolicitudDto.idUser,
     );
     const solicitudPreparada = this.solicitudRepository.create({
       ...createSolicitudDto,
@@ -71,7 +71,7 @@ export class SolicitudService {
   }
   async actualizarEstado(id: number, updateSolicitudDto: UpdateSolicitudDto) {
     const solicitudEncontrada = await this.solicitudRepository.findOne({
-      where:{idSolicitud: id},relations:["idUser"],
+      where: { idSolicitud: id }, relations: ["idUser"],
     });
     if (!solicitudEncontrada) {
       throw new NotFoundException('No se Encontro la Solicitud');
