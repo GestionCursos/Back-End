@@ -54,7 +54,7 @@ export class EventoService {
         'evento.id_evento AS id_evento',
         'evento.nombre AS nombre',
         'evento.urlFoto AS urlFoto',
-        'organizador.nombre AS organizador', 
+        'organizador.nombre AS organizador',
         'evento.numeroHoras AS duracion',
         'COUNT(inscripcion.evento) AS estudiantes'
       ])
@@ -117,7 +117,7 @@ export class EventoService {
   async findOne(id: number) {
     const evento = await this.eventoRepository.findOne({
       where: { id_evento: id },
-      relations: ['carreras', 'idSeccion', 'idOrganizador','requisitos'],
+      relations: ['carreras', 'idSeccion', 'idOrganizador', 'requisitos'],
     });
     if (!evento) throw new NotFoundException("No se encontro el evento buscado")
     return evento;
@@ -164,8 +164,8 @@ export class EventoService {
           n.nota,
           a.porcentaje_asistencia as "asistencia",
           case
-            when coalesce( n.nota, 100 )>= coalesce( e.nota_aprovacion, 90 )
-            and coalesce( a.porcentaje_asistencia, 100 )>= coalesce( e.requiere_asistencia, 90 ) then 'Aprobado'
+            when coalesce(n.nota, 100) >= coalesce(e.nota_aprovacion, 90)
+            and coalesce(a.porcentaje_asistencia, 100) >= coalesce(e.requiere_asistencia, 90) then 'Aprobado'
             else 'Reprobado'
           end as estado
         from
@@ -179,7 +179,9 @@ export class EventoService {
         left join asistencias a on
           a.id_inscripcion = i.id_inscripcion
         where
-          e.id_evento = $1;
+          e.id_evento = $1
+          and coalesce(n.nota, 100) >= coalesce(e.nota_aprovacion, 90)
+          and coalesce(a.porcentaje_asistencia, 100) >= coalesce(e.requiere_asistencia, 90);
       `, [id]);
     const data = {
       nombre_evento: datosGeneralesEvento.nombre,
