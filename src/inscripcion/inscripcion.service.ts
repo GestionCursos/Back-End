@@ -26,11 +26,11 @@ export class InscripcionService {
     // Verificación de inscripción existente
     await this.usuarioService.usuarioEstaInscritoEnEvento(user.uid_firebase, evento.id_evento);
 
-    // Verificación de carrera
-    const carrerasEvento = evento.carreras.map(c => c.nombre);
-    if (carrerasEvento.length > 0 && !carrerasEvento.includes(user.idCarrera.nombre)) {
-      throw new NotFoundException("No tienes permitido inscribirte en este curso; no perteneces a la carrera del evento.");
-    }
+      // Verificación de carrera
+      const carrerasEvento = evento.carreras.map(c => c.nombre);
+      if (!user.idCarrera || (carrerasEvento.length > 0 && !carrerasEvento.includes(user.idCarrera.nombre))) {
+        throw new NotFoundException("No tienes permitido inscribirte en este curso; no perteneces a la carrera del evento.");
+      }
 
     // Validación de requisitos
     const requisitosMap = {
@@ -79,7 +79,7 @@ export class InscripcionService {
     return inscripcionGuardada;
   }
 
- 
+
   async findOne(id: number) {
     const inscripcion = await this.inscripcionRepository.findOneBy({ idInscripcion: id })
     if (!inscripcion) throw new NotFoundException("No existe una inscripcion con el id solicitado")
@@ -101,7 +101,7 @@ export class InscripcionService {
     }
   }
 
- 
+
   async obtenerInscripcionesPorIdEvento(id: number) {
     const inscripcionesDeEvento = await this.inscripcionRepository
       .createQueryBuilder('inscripcion')
