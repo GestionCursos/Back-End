@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, NotFoundException, Request } from '@nestjs/common';
 import { CertificadoService } from './certificado.service';
 import { Public } from 'src/guard/decorators/public.decorator';
 import { CreateCertificadoDto } from './dto/create-certificado.dto';
@@ -44,6 +44,11 @@ export class CertificadoController {
       });
     }
     return this.certificadoService.createMasiveCertife(createCertificadoDto.idEvento,certificados);
+  }
+
+  @Get()
+  async obtenerCertificadosPorIdUser(@Request() req) {
+    return this.certificadoService.obtenerCertificadosPorIdUsuario(req.userUid);
   }
 
 }
