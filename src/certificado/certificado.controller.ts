@@ -43,7 +43,7 @@ export class CertificadoController {
         url: publicUrl,
       });
     }
-    return this.certificadoService.createMasiveCertife(certificados);
+    return this.certificadoService.createMasiveCertife(createCertificadoDto.idEvento,certificados);
   }
 
 }

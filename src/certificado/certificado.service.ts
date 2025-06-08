@@ -8,7 +8,7 @@ import { EventoService } from 'src/evento/evento.service';
 
 @Injectable()
 export class CertificadoService {
-  async createMasiveCertife(certificados: { id_inscripcion: number; url: string; }[]) {
+  async createMasiveCertife(idEvento:number,certificados: { id_inscripcion: number; url: string; }[]) {
     const certificadosAInsertar: Certificado[] = [];
 
     for (const cert of certificados) {
@@ -24,6 +24,8 @@ export class CertificadoService {
 
       certificadosAInsertar.push(nuevoCertificado);
     }
+    await this.eventoService.update(idEvento)
+
     return await this.certificadoRepository.save(certificadosAInsertar);
   }
 
@@ -37,7 +39,6 @@ export class CertificadoService {
   async crearCertificados(createCertificadoDto: CreateCertificadoDto) {
     const evento = await this.eventoService.findOneResumen(createCertificadoDto.idEvento);
     const inscripciones = await this.inscripcionService.obtenerInscripcionesPorIdEvento(evento.id)
-    await this.eventoService.update(createCertificadoDto.idEvento)
     return {
       evento,
       inscripciones
