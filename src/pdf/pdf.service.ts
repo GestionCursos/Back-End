@@ -8,7 +8,7 @@ import { Writable } from 'stream';
 @Injectable()
 export class PdfService {
   async generatePdf(data: any): Promise<Buffer> {
-    const imageUrl = "https://scontent.fuio26-1.fna.fbcdn.net/v/t39.30808-6/311586012_528977262569685_3610733298273233828_n.png?_nc_cat=103&ccb=1-7&_nc_sid=cc71e4&_nc_ohc=Sz1IyW2rGR4Q7kNvwGotTgc&_nc_oc=AdniyXqEyMTvv2ERxDBUQMtABEommvZ80_fMP75K5MXSM64nUzpXfujjK9sRtHoU-wA&_nc_zt=23&_nc_ht=scontent.fuio26-1.fna&_nc_gid=5xwUOJG3nHbRofi4QwgT8g&oh=00_AfJfS8OW7OyMiVJLN3bVoj74yZxQaVmpytinw_BPeMj85Q&oe=6842619C";
+    const imageUrl = `${process.env.URL_IMAGE_BANNER}`;
     const doc = new PDFDocument({ size: 'A4', layout: 'landscape', margin: 40 });
 
     // Creamos un array para ir guardando los chunks del PDF
@@ -25,7 +25,7 @@ export class PdfService {
     doc.pipe(stream);
 
     // Banner (imagen completa ancho, altura 80px)
-    const response = await fetch(imageUrl);
+    const response = await fetch(imageUrl).then(res => res.blob());
     const arrayBuffer = await response.arrayBuffer();
     const imageBuffer = Buffer.from(arrayBuffer);
 

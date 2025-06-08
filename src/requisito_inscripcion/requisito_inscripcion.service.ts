@@ -6,23 +6,22 @@ import { DataSource, Repository } from 'typeorm';
 import { InscripcionService } from 'src/inscripcion/inscripcion.service';
 import { RequisitoService } from 'src/requisito/requisito.service';
 import { NotFoundError } from 'rxjs';
+import { Inscripcion } from 'src/inscripcion/entities/inscripcion.entity';
 
 @Injectable()
 export class RequisitoInscripcionService {
   constructor(
     @InjectRepository(RequisitoInscripcion)
     private readonly riRepository: Repository<RequisitoInscripcion>,
-    private readonly inscripcionService: InscripcionService,
     private readonly requisitoService: RequisitoService,
     private readonly dataSource: DataSource,  // inyectamos DataSource para hacer consultas directas
 
   ) { }
-  async create(createRequisitoInscripcionDto: CreateRequisitoInscripcionDto) {
+  async create(createRequisitoInscripcionDto: {inscripcion: Inscripcion, requisito: number, urlRequisito: string}) {
     const requisito = await this.requisitoService.findById(createRequisitoInscripcionDto.requisito);
-    const inscripcion = await this.inscripcionService.findOne(createRequisitoInscripcionDto.inscripcion);
     const isPreparado = this.riRepository.create({
       ...createRequisitoInscripcionDto,
-      inscripcion: inscripcion,
+      inscripcion: createRequisitoInscripcionDto.inscripcion,
       requisito,
     })
     const isGuardado = await this.riRepository.save(isPreparado);

@@ -3,8 +3,5 @@ import { CreateSeccioneDto } from './create-seccione.dto';
 import { IsNotEmpty, IsNumber, Min } from 'class-validator';
 
 export class UpdateSeccioneDto extends PartialType(CreateSeccioneDto) {
-  @IsNumber()
-  @IsNotEmpty()
-  @Min(1)
-  id_seccion: number;
+
 }

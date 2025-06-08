@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Request,
 } from '@nestjs/common';
 import { SolicitudService } from './solicitud.service';
 import { CreateSolicitudDto } from './dto/create-solicitud.dto';
@@ -14,12 +15,16 @@ import { Public } from 'src/guard/decorators/public.decorator';
 
 @Controller('solicitud')
 export class SolicitudController {
-  constructor(private readonly solicitudService: SolicitudService) {}
+  constructor(private readonly solicitudService: SolicitudService) { }
 
   @Post()
   @Public()
   create(@Body() createSolicitudDto: CreateSolicitudDto) {
     return this.solicitudService.create(createSolicitudDto);
+  }
+  @Post('logeado')
+  createSolicitudUserLogeado(@Body() createSolicitudDto: CreateSolicitudDto, @Request() req) {
+    return this.solicitudService.create(createSolicitudDto, req.userUid);
   }
 
   @Get('solicitudesGenerales')

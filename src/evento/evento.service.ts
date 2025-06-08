@@ -54,7 +54,7 @@ export class EventoService {
         'evento.id_evento AS id_evento',
         'evento.nombre AS nombre',
         'evento.urlFoto AS urlFoto',
-        'organizador.nombre AS organizador', 
+        'organizador.nombre AS organizador',
         'evento.numeroHoras AS duracion',
         'COUNT(inscripcion.evento) AS estudiantes'
       ])
@@ -69,7 +69,6 @@ export class EventoService {
       .createQueryBuilder('evento')
       .innerJoin('Inscripciones', 'inscripcion', 'inscripcion.evento = evento.id_evento')
       .where('evento.visible = :visible', { visible: true })
-      .andWhere('evento.estado = :estado', { estado: 'Activo' })
       .andWhere('(evento.nota_aprovacion IS NOT NULL OR evento.requiere_asistencia IS NOT NULL)')
       .select(['evento.id_evento', 'evento.nombre'])
       .groupBy('evento.id_evento')
@@ -118,7 +117,7 @@ export class EventoService {
   async findOne(id: number) {
     const evento = await this.eventoRepository.findOne({
       where: { id_evento: id },
-      relations: ['carreras', 'idSeccion', 'idOrganizador'],
+      relations: ['carreras', 'idSeccion', 'idOrganizador', 'requisitos'],
     });
     if (!evento) throw new NotFoundException("No se encontro el evento buscado")
     return evento;
@@ -160,25 +159,29 @@ export class EventoService {
 
     const response = await this.dataSource.query(`
         select
-          u.nombres || ' '||	u.apellidos as Estudiante,
+          u.nombres || ' ' || u.apellidos as Estudiante,
           u.correo,
           n.nota,
           a.porcentaje_asistencia as "asistencia",
-          CASE 
-            WHEN n.nota >= e.nota_aprovacion THEN 'Aprobado'
-            ELSE 'Reprobado'
-          END AS estado
+          case
+            when coalesce(n.nota, 100) >= coalesce(e.nota_aprovacion, 90)
+            and coalesce(a.porcentaje_asistencia, 100) >= coalesce(e.requiere_asistencia, 90) then 'Aprobado'
+            else 'Reprobado'
+          end as estado
         from
           "Inscripciones" i
         inner join "Eventos" e on
           e.id_evento = i.id_evento
         inner join "Usuarios" u on
           u.uid_firebase = i.id_usuario
-        inner join notas n on
+        left join notas n on
           n.id_inscripcion = i.id_inscripcion
-        inner join asistencias a on
-          a.id_inscripcion = i.id_inscripcion 
-        where e.id_evento = $1;
+        left join asistencias a on
+          a.id_inscripcion = i.id_inscripcion
+        where
+          e.id_evento = $1
+          and coalesce(n.nota, 100) >= coalesce(e.nota_aprovacion, 90)
+          and coalesce(a.porcentaje_asistencia, 100) >= coalesce(e.requiere_asistencia, 90);
       `, [id]);
     const data = {
       nombre_evento: datosGeneralesEvento.nombre,
@@ -242,4 +245,3 @@ export class EventoService {
   }
 
 }
-
