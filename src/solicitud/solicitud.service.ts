@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Solicitud } from './entities/solicitud.entity';
 import { Repository } from 'typeorm';
 import { UsuarioService } from 'src/usuario/usuario.service';
+import { Octokit } from "@octokit/rest";
 
 @Injectable()
 export class SolicitudService {
@@ -77,6 +78,12 @@ export class SolicitudService {
       throw new NotFoundException('No se Encontro la Solicitud');
     }
     solicitudEncontrada.estado = updateSolicitudDto.estado;
+
+    // Crear rama en GitHub si la solicitud es aprobada
+    if (updateSolicitudDto.estado === 'aprobada') {
+      await this.crearRamaGithub(solicitudEncontrada);
+    }
+
     fetch(`${process.env.API_URL_CORREO}`, {
       method: "POST",
       headers: {
@@ -94,5 +101,48 @@ export class SolicitudService {
     })
     await this.solicitudRepository.save(solicitudEncontrada);
     return true;
+  }
+
+  /**
+   * Crea una nueva rama en dos repositorios de GitHub (backend y frontend) al aprobar una solicitud
+   */
+  private async crearRamaGithub(solicitud: any) {
+    const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+    const owner = process.env.GITHUB_OWNER || 'TU_ORG';
+    const backendRepo = process.env.GITHUB_BACKEND_REPO || 'backend-repo';
+    const frontendRepo = process.env.GITHUB_FRONTEND_REPO || 'frontend-repo';
+    // Obtener la referencia del branch develop en ambos repos
+    const { data: backendRef } = await octokit.git.getRef({
+      owner,
+      repo: backendRepo,
+      ref: 'heads/develop',
+    });
+    const { data: frontendRef } = await octokit.git.getRef({
+      owner,
+      repo: frontendRepo,
+      ref: 'heads/develop',
+    });
+    // Crear nombre de rama único con el título de la solicitud (limpio para branch)
+    const cleanTitle = (solicitud.titulo || 'solicitud')
+      .toLowerCase()
+      .replace(/[^a-z0-9\-]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .substring(0, 30); // Limita la longitud
+    const branchName = `solicitud-${solicitud.idSolicitud}-${cleanTitle}-${Date.now()}`;
+    // Crear la nueva rama en backend desde develop
+    await octokit.git.createRef({
+      owner,
+      repo: backendRepo,
+      ref: `refs/heads/${branchName}`,
+      sha: backendRef.object.sha,
+    });
+    // Crear la nueva rama en frontend desde develop
+    await octokit.git.createRef({
+      owner,
+      repo: frontendRepo,
+      ref: `refs/heads/${branchName}`,
+      sha: frontendRef.object.sha,
+    });
+    return branchName;
   }
 }
