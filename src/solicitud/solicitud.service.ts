@@ -80,7 +80,7 @@ export class SolicitudService {
     solicitudEncontrada.estado = updateSolicitudDto.estado;
 
     // Crear rama en GitHub si la solicitud es aprobada
-    if (updateSolicitudDto.estado === 'aprobada') {
+    if (updateSolicitudDto.estado === 'Aprobado') {
       await this.crearRamaGithub(solicitudEncontrada);
     }
 
