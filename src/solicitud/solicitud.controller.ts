@@ -23,8 +23,17 @@ export class SolicitudController {
     return this.solicitudService.create(createSolicitudDto);
   }
   @Post('logeado')
-  createSolicitudUserLogeado(@Body() createSolicitudDto: CreateSolicitudDto, @Request() req) {
-    return this.solicitudService.create(createSolicitudDto, req.userUid);
+  async createSolicitudUserLogeado(@Body() createSolicitudDto: CreateSolicitudDto, @Request() req) {
+    try {
+      return await this.solicitudService.create(createSolicitudDto, req.userUid);
+    } catch (error) {
+      console.error('Error al crear solicitud (logeado):', error);
+      // Si el error tiene response (ValidationPipe), mostrar el mensaje
+      if (error.response) {
+        console.error('Detalles del error:', error.response);
+      }
+      throw error;
+    }
   }
 
   @Get('solicitudesGenerales')
@@ -65,6 +74,7 @@ export class SolicitudController {
   }
 
   @Patch('cancelar/:id')
+  @Public()
   marcarComoCancelado(@Param('id') id: number) {
     return this.solicitudService.marcarComoCancelado(id);
   }

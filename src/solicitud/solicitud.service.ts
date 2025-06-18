@@ -22,7 +22,6 @@ export class SolicitudService {
       ...createSolicitudDto,
       idUser: usuarioEncontrado,
     });
-
     const solicitudCreada =
       await this.solicitudRepository.save(solicitudPreparada);
     if (!solicitudCreada)
