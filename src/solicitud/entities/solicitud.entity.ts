@@ -23,4 +23,15 @@ export class Solicitud {
     @Column()
     archivo:string;
     @Column({default:"Pendiente"})
-    estado?:string;}
+    estado?:string;
+    @Column({ nullable: true })
+    colaboradorGithub?: string;
+    @Column({ nullable: true })
+    colaboradorGithubBackend?: string;
+    @Column({ nullable: true })
+    colaboradorGithubFrontend?: string;
+    @Column({ nullable: true })
+    ramaBackend?: string;
+    @Column({ nullable: true })
+    ramaFrontend?: string;
+}
