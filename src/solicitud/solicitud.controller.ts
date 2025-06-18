@@ -28,6 +28,7 @@ export class SolicitudController {
   }
 
   @Get('solicitudesGenerales')
+  @Public()
   findAllGeneral() {
     return this.solicitudService.findAllSolicitudGeneral();
   }
@@ -43,5 +44,39 @@ export class SolicitudController {
     @Body() updateSolicitudDto: UpdateSolicitudDto,
   ) {
     return this.solicitudService.actualizarEstado(id, updateSolicitudDto);
+  }
+
+  @Patch('asignar-colaborador/:id')
+  @Public()
+  asignarColaborador(
+    @Param('id') id: number,
+    @Body('colaboradorGithub') colaboradorGithub: string,
+    @Body('repo') repo: 'backend' | 'frontend',
+  ) {
+    return this.solicitudService.asignarColaborador(id, colaboradorGithub, repo);
+  }
+
+  @Patch('completar/:id')
+  marcarComoCompletado(
+    @Param('id') id: number,
+    @Body('repo') repo: 'backend' | 'frontend',
+  ) {
+    return this.solicitudService.marcarComoCompletado(id, repo);
+  }
+
+  @Patch('cancelar/:id')
+  marcarComoCancelado(@Param('id') id: number) {
+    return this.solicitudService.marcarComoCancelado(id);
+  }
+
+  @Patch('iniciar-implementacion/:id')
+  iniciarImplementacion(@Param('id') id: number) {
+    return this.solicitudService.iniciarImplementacion(id);
+  }
+
+  @Get('colaboradores/:repo')
+  @Public()
+  getColaboradores(@Param('repo') repo: 'backend' | 'frontend') {
+    return this.solicitudService.obtenerColaboradoresGithub(repo);
   }
 }
