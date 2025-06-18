@@ -7,4 +7,14 @@ export class UpdateSolicitudDto  {
     estado: string;
     @IsString()
     descripcion:string;
+    @IsString()
+    colaboradorGithub?: string;
+    @IsString()
+    colaboradorGithubBackend?: string;
+    @IsString()
+    colaboradorGithubFrontend?: string;
+    @IsString()
+    ramaBackend?: string;
+    @IsString()
+    ramaFrontend?: string;
 }
