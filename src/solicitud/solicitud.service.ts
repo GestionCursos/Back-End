@@ -31,12 +31,11 @@ export class SolicitudService {
   }
 
   async findAllSolicitudGeneral() {
+    // Traer todas las solicitudes, sin filtrar por estado
     const resultadoGeneral = await this.solicitudRepository
       .createQueryBuilder('solicitud')
       .leftJoinAndSelect('solicitud.idUser', 'usuario')
       .leftJoin('detalle_errores', 'detalle', 'detalle.id_solicitud = solicitud.id_solicitud')
-      .where('detalle.id_solicitud IS NULL')
-      .andWhere('solicitud.estado = :estado', { estado: 'Pendiente' })
       .select([
         'solicitud.idSolicitud',
         'solicitud.apartado',
@@ -47,6 +46,10 @@ export class SolicitudService {
         'solicitud.urgencia',
         'solicitud.archivo',
         'solicitud.estado',
+        'solicitud.colaboradorGithubBackend',
+        'solicitud.colaboradorGithubFrontend',
+        'solicitud.ramaBackend',
+        'solicitud.ramaFrontend',
         'usuario.uid_firebase',
         'usuario.nombres',
         'usuario.apellidos',
@@ -77,12 +80,8 @@ export class SolicitudService {
     if (!solicitudEncontrada) {
       throw new NotFoundException('No se Encontro la Solicitud');
     }
+    // Solo cambia a 'Aprobado', no a 'Implementando'
     solicitudEncontrada.estado = updateSolicitudDto.estado;
-
-    // Crear rama en GitHub si la solicitud es aprobada
-    if (updateSolicitudDto.estado === 'Aprobado') {
-      await this.crearRamaGithub(solicitudEncontrada);
-    }
 
     fetch(`${process.env.API_URL_CORREO}`, {
       method: "POST",
@@ -104,45 +103,139 @@ export class SolicitudService {
   }
 
   /**
-   * Crea una nueva rama en dos repositorios de GitHub (backend y frontend) al aprobar una solicitud
+   * Cambia el estado a 'Completado' y crea un Pull Request en GitHub
    */
-  private async crearRamaGithub(solicitud: any) {
+  async marcarComoCompletado(id: number, repo: 'backend' | 'frontend') {
+    const solicitud = await this.solicitudRepository.findOneBy({ idSolicitud: id });
+    if (!solicitud) throw new NotFoundException('No se encontró la solicitud');
+    solicitud.estado = 'Completado';
+    await this.solicitudRepository.save(solicitud);
+    // Crear PR en GitHub
+    const branchName = await this.crearRamaGithub(solicitud, repo);
+    await this.crearPullRequest(solicitud, branchName, repo);
+    return { message: 'Solicitud completada y PR creado', branchName };
+  }
+
+  /**
+   * Cambia el estado a 'Cancelado'
+   */
+  async marcarComoCancelado(id: number) {
+    const solicitud = await this.solicitudRepository.findOneBy({ idSolicitud: id });
+    if (!solicitud) throw new NotFoundException('No se encontró la solicitud');
+    solicitud.estado = 'Cancelado';
+    await this.solicitudRepository.save(solicitud);
+    return { message: 'Solicitud cancelada' };
+  }
+
+  /**
+   * Crea una nueva rama en el repo indicado al pasar a 'Implementando'
+   */
+  async crearRamaGithub(solicitud: any, repo: 'backend' | 'frontend') {
     const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
     const owner = process.env.GITHUB_OWNER || 'TU_ORG';
-    const backendRepo = process.env.GITHUB_BACKEND_REPO || 'backend-repo';
-    const frontendRepo = process.env.GITHUB_FRONTEND_REPO || 'frontend-repo';
-    // Obtener la referencia del branch develop en ambos repos
-    const { data: backendRef } = await octokit.git.getRef({
+    const repoName = repo === 'backend'
+      ? process.env.GITHUB_BACKEND_REPO || 'Back-End'
+      : process.env.GITHUB_FRONTEND_REPO || 'Front-End';
+    // Obtener la referencia del branch develop
+    const { data: ref } = await octokit.git.getRef({
       owner,
-      repo: backendRepo,
+      repo: repoName,
       ref: 'heads/develop',
     });
-    const { data: frontendRef } = await octokit.git.getRef({
-      owner,
-      repo: frontendRepo,
-      ref: 'heads/develop',
-    });
-    // Crear nombre de rama único con el título de la solicitud (limpio para branch)
+    // Crear nombre de rama único
     const cleanTitle = (solicitud.titulo || 'solicitud')
       .toLowerCase()
       .replace(/[^a-z0-9\-]+/g, '-')
       .replace(/^-+|-+$/g, '')
-      .substring(0, 30); // Limita la longitud
+      .substring(0, 30);
     const branchName = `solicitud-${solicitud.idSolicitud}-${cleanTitle}-${Date.now()}`;
-    // Crear la nueva rama en backend desde develop
     await octokit.git.createRef({
       owner,
-      repo: backendRepo,
+      repo: repoName,
       ref: `refs/heads/${branchName}`,
-      sha: backendRef.object.sha,
-    });
-    // Crear la nueva rama en frontend desde develop
-    await octokit.git.createRef({
-      owner,
-      repo: frontendRepo,
-      ref: `refs/heads/${branchName}`,
-      sha: frontendRef.object.sha,
+      sha: ref.object.sha,
     });
     return branchName;
+  }
+
+  /**
+   * Crea un Pull Request en el repo indicado
+   */
+  async crearPullRequest(solicitud: any, branchName: string, repo: 'backend' | 'frontend') {
+    const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+    const owner = process.env.GITHUB_OWNER || 'TU_ORG';
+    const repoName = repo === 'backend'
+      ? process.env.GITHUB_BACKEND_REPO || 'Back-End'
+      : process.env.GITHUB_FRONTEND_REPO || 'Front-End';
+    await octokit.pulls.create({
+      owner,
+      repo: repoName,
+      title: `Solicitud ${solicitud.idSolicitud}: ${solicitud.titulo || ''}`,
+      head: branchName,
+      base: 'develop',
+      body: solicitud.descripcion || '',
+    });
+  }
+
+  /**
+   * Asigna un colaborador y crea la rama correspondiente en el repo indicado (backend o frontend)
+   */
+  async asignarColaborador(id: number, colaboradorGithub: string, repo: 'backend' | 'frontend') {
+    const solicitud = await this.solicitudRepository.findOneBy({ idSolicitud: id });
+    if (!solicitud) {
+      throw new NotFoundException('No se encontró la solicitud');
+    }
+    // Solo cambia a 'Implementando' si está en 'Aprobado'
+    if (solicitud.estado === 'Aprobado') {
+      solicitud.estado = 'Implementando';
+    }
+    // Crear rama en el repo correspondiente y guardar el nombre
+    const branchName = await this.crearRamaGithub(solicitud, repo);
+    if (repo === 'backend') {
+      solicitud.colaboradorGithubBackend = colaboradorGithub;
+      solicitud.ramaBackend = branchName;
+    } else {
+      solicitud.colaboradorGithubFrontend = colaboradorGithub;
+      solicitud.ramaFrontend = branchName;
+    }
+    await this.solicitudRepository.save(solicitud);
+    return solicitud;
+  }
+
+  /**
+   * Obtiene los colaboradores de un repositorio de GitHub
+   */
+  async obtenerColaboradoresGithub(repo: 'backend' | 'frontend') {
+    const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+    const owner = process.env.GITHUB_OWNER || 'TU_ORG';
+    const repoName = repo === 'backend'
+      ? process.env.GITHUB_BACKEND_REPO || 'Back-End'
+      : process.env.GITHUB_FRONTEND_REPO || 'Front-End';
+    const { data } = await octokit.repos.listCollaborators({ owner, repo: repoName });
+    return data.map(user => ({
+      login: user.login,
+      avatar_url: user.avatar_url,
+      html_url: user.html_url,
+      permissions: user.permissions,
+    }));
+  }
+
+  /**
+   * Inicia la implementación: crea ramas y cambia a 'Implementando'
+   */
+  async iniciarImplementacion(id: number) {
+    const solicitud = await this.solicitudRepository.findOneBy({ idSolicitud: id });
+    if (!solicitud) throw new NotFoundException('No se encontró la solicitud');
+    if (!solicitud.colaboradorGithubBackend || !solicitud.colaboradorGithubFrontend) {
+      throw new Error('Debes asignar responsables de backend y frontend antes de iniciar la implementación');
+    }
+    // Crear ramas para backend y frontend
+    const branchBackend = await this.crearRamaGithub(solicitud, 'backend');
+    const branchFrontend = await this.crearRamaGithub(solicitud, 'frontend');
+    solicitud.ramaBackend = branchBackend;
+    solicitud.ramaFrontend = branchFrontend;
+    solicitud.estado = 'Implementando';
+    await this.solicitudRepository.save(solicitud);
+    return { message: 'Implementación iniciada', branchBackend, branchFrontend };
   }
 }
