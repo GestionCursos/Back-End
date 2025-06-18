@@ -221,18 +221,27 @@ export class SolicitudService {
 
   /**
    * Inicia la implementación: crea ramas y cambia a 'Implementando'
+   * Ahora permite iniciar solo backend, solo frontend, o ambos
    */
   async iniciarImplementacion(id: number) {
     const solicitud = await this.solicitudRepository.findOneBy({ idSolicitud: id });
     if (!solicitud) throw new NotFoundException('No se encontró la solicitud');
-    if (!solicitud.colaboradorGithubBackend || !solicitud.colaboradorGithubFrontend) {
-      throw new Error('Debes asignar responsables de backend y frontend antes de iniciar la implementación');
+    // Debe tener al menos un responsable asignado
+    if (!solicitud.colaboradorGithubBackend && !solicitud.colaboradorGithubFrontend) {
+      throw new Error('Debes asignar al menos un responsable (backend o frontend) antes de iniciar la implementación');
     }
-    // Crear ramas para backend y frontend
-    const branchBackend = await this.crearRamaGithub(solicitud, 'backend');
-    const branchFrontend = await this.crearRamaGithub(solicitud, 'frontend');
-    solicitud.ramaBackend = branchBackend;
-    solicitud.ramaFrontend = branchFrontend;
+    // Crear rama backend si hay responsable
+    let branchBackend: string | undefined = undefined;
+    if (solicitud.colaboradorGithubBackend) {
+      branchBackend = await this.crearRamaGithub(solicitud, 'backend');
+      solicitud.ramaBackend = branchBackend;
+    }
+    // Crear rama frontend si hay responsable
+    let branchFrontend: string | undefined = undefined;
+    if (solicitud.colaboradorGithubFrontend) {
+      branchFrontend = await this.crearRamaGithub(solicitud, 'frontend');
+      solicitud.ramaFrontend = branchFrontend;
+    }
     solicitud.estado = 'Implementando';
     await this.solicitudRepository.save(solicitud);
     return { message: 'Implementación iniciada', branchBackend, branchFrontend };
