@@ -52,6 +52,7 @@ export class SolicitudController {
     @Param('id') id: number,
     @Body() updateSolicitudDto: UpdateSolicitudDto,
   ) {
+    console.log('DTO recibido en PATCH /solicitud/actualizar/:id:', updateSolicitudDto);
     return this.solicitudService.actualizarEstado(id, updateSolicitudDto);
   }
 

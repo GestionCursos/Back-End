@@ -8,20 +8,20 @@ export class Solicitud {
     @ManyToOne(() => Usuario, (usuario) => usuario.uid_firebase)
     @JoinColumn({ name: "id_user" })
     idUser: Usuario;
-    @Column()
-    apartado: string;
-    @Column({ name: "tipo_cambio" })
-    tipoCambio: string;
-    @Column({ name: "otro_tipo" })
-    otroTipo: string;
-    @Column()
-    descripcion: string;
-    @Column()
-    justificacion: string;
-    @Column()
-    urgencia: string;
-    @Column()
-    archivo:string;
+    @Column({ nullable: true })
+    apartado?: string;
+    @Column({ name: "tipo_cambio", nullable: true })
+    tipoCambio?: string;
+    @Column({ name: "otro_tipo", nullable: true })
+    otroTipo?: string;
+    @Column({ nullable: true })
+    descripcion?: string;
+    @Column({ nullable: true })
+    justificacion?: string;
+    @Column({ nullable: true })
+    urgencia?: string;
+    @Column({ nullable: true })
+    archivo?: string;
     @Column({default:"Pendiente"})
     estado?:string;
     @Column({ nullable: true })

@@ -73,15 +73,16 @@ export class SolicitudService {
     return resultadoPorUno;
   }
   async actualizarEstado(id: number, updateSolicitudDto: UpdateSolicitudDto) {
+    console.log('DTO recibido en actualizarEstado:', updateSolicitudDto);
     const solicitudEncontrada = await this.solicitudRepository.findOne({
       where: { idSolicitud: id }, relations: ["idUser"],
     });
     if (!solicitudEncontrada) {
       throw new NotFoundException('No se Encontro la Solicitud');
     }
-    // Solo cambia a 'Aprobado', no a 'Implementando'
     solicitudEncontrada.estado = updateSolicitudDto.estado;
-
+    // Actualizar siempre el campo, aunque venga vacío o null
+    solicitudEncontrada.otroTipo = updateSolicitudDto.otroTipo;
     fetch(`${process.env.API_URL_CORREO}`, {
       method: "POST",
       headers: {
@@ -92,7 +93,7 @@ export class SolicitudService {
         subject: "Estado Solicitud",
         text: `Hola, ${solicitudEncontrada.idUser.nombres}, 
         este es un correo enviado desde la administración de nuestra web de cursos.
-        Te informamos que tu solicitud de ${solicitudEncontrada.tipoCambio} ha sido ${updateSolicitudDto.estado}.
+        Te informamos que tu solicitud de ${solicitudEncontrada.otroTipo || solicitudEncontrada.tipoCambio} ha sido ${updateSolicitudDto.estado}.
         \n\nHemos considerado tu solicitud y hemos tomado la decisión de ${updateSolicitudDto.estado} por el motivo de ${updateSolicitudDto.descripcion}.
         \n\nEstaremos pendientes de tus solicitudes. ¡Sigue aportando a nuestra web!`
       })
