@@ -8,7 +8,8 @@ export class CreateSolicitudDto {
   @IsString()
   tipoCambio: string;
   @IsString()
-  otroTipo: string;
+  @IsOptional()
+  otroTipo?: string;
   @IsString()
   descripcion: string;
   @IsString()
