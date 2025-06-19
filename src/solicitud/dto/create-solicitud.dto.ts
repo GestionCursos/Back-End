@@ -2,7 +2,8 @@ import { IsString, IsOptional } from "class-validator";
 
 export class CreateSolicitudDto {
   @IsString()
-  idUser: string;
+  @IsOptional() // <-- Permitir idUser vacío para anónimos
+  idUser?: string;
   @IsString()
   apartado: string;
   @IsString()

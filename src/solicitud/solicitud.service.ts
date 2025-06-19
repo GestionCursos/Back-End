@@ -6,6 +6,7 @@ import { Solicitud } from './entities/solicitud.entity';
 import { Repository } from 'typeorm';
 import { UsuarioService } from 'src/usuario/usuario.service';
 import { Octokit } from "@octokit/rest";
+import { Usuario } from 'src/usuario/entities/usuario.entity';
 
 @Injectable()
 export class SolicitudService {
@@ -15,15 +16,21 @@ export class SolicitudService {
     private readonly usuarioService: UsuarioService,
   ) { }
   async create(createSolicitudDto: CreateSolicitudDto, userUid?: string) {
-    const usuarioEncontrado = await this.usuarioService.findOne(
-      userUid !== null && userUid !== undefined ? userUid : createSolicitudDto.idUser,
-    );
-    const solicitudPreparada = this.solicitudRepository.create({
-      ...createSolicitudDto,
-      idUser: usuarioEncontrado,
-    });
-    const solicitudCreada =
-      await this.solicitudRepository.save(solicitudPreparada);
+    let usuarioEncontrado: Usuario | undefined = undefined;
+    if (userUid !== null && userUid !== undefined) {
+      usuarioEncontrado = await this.usuarioService.findOne(userUid);
+    } else if (createSolicitudDto.idUser) {
+      usuarioEncontrado = await this.usuarioService.findOne(createSolicitudDto.idUser);
+    }
+    // Si no hay usuario, no incluir idUser en el objeto
+    const baseSolicitud: any = { ...createSolicitudDto };
+    if (usuarioEncontrado) {
+      baseSolicitud.idUser = usuarioEncontrado;
+    } else {
+      delete baseSolicitud.idUser;
+    }
+    const solicitudPreparada = this.solicitudRepository.create(baseSolicitud);
+    const solicitudCreada = await this.solicitudRepository.save(solicitudPreparada);
     if (!solicitudCreada)
       throw new NotFoundException('No se pudo crear la solicitud');
     return solicitudCreada;
@@ -83,21 +90,24 @@ export class SolicitudService {
     solicitudEncontrada.estado = updateSolicitudDto.estado;
     // Actualizar siempre el campo, aunque venga vacío o null
     solicitudEncontrada.otroTipo = updateSolicitudDto.otroTipo;
-    fetch(`${process.env.API_URL_CORREO}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        to: solicitudEncontrada.idUser.correo,
-        subject: "Estado Solicitud",
-        text: `Hola, ${solicitudEncontrada.idUser.nombres}, 
+    // Solo enviar correo si la solicitud tiene usuario asociado
+    if (solicitudEncontrada.idUser) {
+      fetch(`${process.env.API_URL_CORREO}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          to: solicitudEncontrada.idUser.correo,
+          subject: "Estado Solicitud",
+          text: `Hola, ${solicitudEncontrada.idUser.nombres}, 
         este es un correo enviado desde la administración de nuestra web de cursos.
         Te informamos que tu solicitud de ${solicitudEncontrada.otroTipo || solicitudEncontrada.tipoCambio} ha sido ${updateSolicitudDto.estado}.
         \n\nHemos considerado tu solicitud y hemos tomado la decisión de ${updateSolicitudDto.estado} por el motivo de ${updateSolicitudDto.descripcion}.
         \n\nEstaremos pendientes de tus solicitudes. ¡Sigue aportando a nuestra web!`
+        })
       })
-    })
+    }
     await this.solicitudRepository.save(solicitudEncontrada);
     return true;
   }
