@@ -90,4 +90,13 @@ export class SolicitudController {
   getColaboradores(@Param('repo') repo: 'backend' | 'frontend') {
     return this.solicitudService.obtenerColaboradoresGithub(repo);
   }
+
+  @Get('commits/:repo/:branch')
+  @Public()
+  async getCommitsFromBranch(
+    @Param('repo') repo: 'backend' | 'frontend',
+    @Param('branch') branch: string
+  ) {
+    return this.solicitudService.obtenerCommitsDeRama(repo, branch);
+  }
 }

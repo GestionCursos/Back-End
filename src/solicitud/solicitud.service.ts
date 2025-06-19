@@ -111,8 +111,9 @@ export class SolicitudService {
     solicitud.estado = 'Completado';
     await this.solicitudRepository.save(solicitud);
     try {
-      // Crear PR en GitHub
-      const branchName = await this.crearRamaGithub(solicitud, repo);
+      // Usar la rama ya existente, no crear una nueva
+      const branchName = repo === 'backend' ? solicitud.ramaBackend : solicitud.ramaFrontend;
+      if (!branchName) throw new Error('No existe una rama asociada a esta solicitud para el repo seleccionado');
       await this.crearPullRequest(solicitud, branchName, repo);
       return { message: 'Solicitud completada y PR creado', branchName };
     } catch (error) {
@@ -200,18 +201,11 @@ export class SolicitudService {
     if (!solicitud) {
       throw new NotFoundException('No se encontró la solicitud');
     }
-    // Solo cambia a 'Implementando' si está en 'Aprobado'
-    if (solicitud.estado === 'Aprobado') {
-      solicitud.estado = 'Implementando';
-    }
-    // Crear rama en el repo correspondiente y guardar el nombre
-    const branchName = await this.crearRamaGithub(solicitud, repo);
+    // Solo asignar el colaborador, NO crear la rama aquí
     if (repo === 'backend') {
       solicitud.colaboradorGithubBackend = colaboradorGithub;
-      solicitud.ramaBackend = branchName;
     } else {
       solicitud.colaboradorGithubFrontend = colaboradorGithub;
-      solicitud.ramaFrontend = branchName;
     }
     await this.solicitudRepository.save(solicitud);
     return solicitud;
@@ -261,5 +255,41 @@ export class SolicitudService {
     solicitud.estado = 'Implementando';
     await this.solicitudRepository.save(solicitud);
     return { message: 'Implementación iniciada', branchBackend, branchFrontend };
+  }
+
+  /**
+   * Obtiene los commits de una rama específica en GitHub
+   */
+  async obtenerCommitsDeRama(repo: 'backend' | 'frontend', branch: string) {
+    const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+    const owner = process.env.GITHUB_OWNER || 'TU_ORG';
+    const repoName = repo === 'backend'
+      ? process.env.GITHUB_BACKEND_REPO || 'Back-End'
+      : process.env.GITHUB_FRONTEND_REPO || 'Front-End';
+    try {
+      // Obtener la referencia de la rama base (develop)
+      const { data: baseRef } = await octokit.git.getRef({
+        owner,
+        repo: repoName,
+        ref: 'heads/develop',
+      });
+      // Listar los commits exclusivos de la rama (no presentes en develop)
+      const { data: comparison } = await octokit.repos.compareCommits({
+        owner,
+        repo: repoName,
+        base: 'develop',
+        head: branch,
+      });
+      // Los commits exclusivos están en comparison.commits
+      return comparison.commits.map(commit => ({
+        sha: commit.sha,
+        message: commit.commit.message,
+        author: commit.commit.author?.name,
+        date: commit.commit.author?.date,
+        url: commit.html_url,
+      }));
+    } catch (e) {
+      return { error: 'No se pudieron obtener los commits exclusivos de la rama', details: e.message };
+    }
   }
 }
