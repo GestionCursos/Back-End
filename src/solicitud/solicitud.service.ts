@@ -109,10 +109,19 @@ export class SolicitudService {
     if (!solicitud) throw new NotFoundException('No se encontró la solicitud');
     solicitud.estado = 'Completado';
     await this.solicitudRepository.save(solicitud);
-    // Crear PR en GitHub
-    const branchName = await this.crearRamaGithub(solicitud, repo);
-    await this.crearPullRequest(solicitud, branchName, repo);
-    return { message: 'Solicitud completada y PR creado', branchName };
+    try {
+      // Crear PR en GitHub
+      const branchName = await this.crearRamaGithub(solicitud, repo);
+      await this.crearPullRequest(solicitud, branchName, repo);
+      return { message: 'Solicitud completada y PR creado', branchName };
+    } catch (error) {
+      // Si ocurre un error en GitHub, pero la BD ya fue actualizada, devolver un mensaje claro
+      return {
+        message: 'Solicitud completada en la base de datos, pero ocurrió un error al crear el PR en GitHub.',
+        error: error?.message || error,
+        status: 'warning',
+      };
+    }
   }
 
   /**
@@ -141,13 +150,19 @@ export class SolicitudService {
       repo: repoName,
       ref: 'heads/develop',
     });
+    // Prefijo Gitflow estricto
+    let prefix = 'feature';
+    const tipo = (solicitud.tipoCambio || '').toLowerCase();
+    if (tipo.includes('error') || tipo.includes('corrección')) {
+      prefix = 'hotfix';
+    } // Todo lo demás, incluyendo visual/ux/otro, será feature
     // Crear nombre de rama único
     const cleanTitle = (solicitud.titulo || 'solicitud')
       .toLowerCase()
       .replace(/[^a-z0-9\-]+/g, '-')
       .replace(/^-+|-+$/g, '')
       .substring(0, 30);
-    const branchName = `solicitud-${solicitud.idSolicitud}-${cleanTitle}-${Date.now()}`;
+    const branchName = `${prefix}/solicitud-${solicitud.idSolicitud}-${cleanTitle}-${Date.now()}`;
     await octokit.git.createRef({
       owner,
       repo: repoName,
