@@ -121,7 +121,7 @@ export class PdfService {
     });
 
     // Generar código QR con la URL o texto que desees (por ejemplo, info del certificado o link de validación)
-    const qrData = process.env.URL_VERIFICAR_CERTIFICADO + `?id_inscripcion=${data.inscripciones.id_inscripcion}`;
+    const qrData = `https://edu-events.pages.dev/pages/verificar?id_inscripcion=${data.inscripciones.id_inscripcion}`;
     const qrImageBuffer = await QRCode.toBuffer(qrData, { type: 'png', margin: 1, width: 100 });
 
     const qrX = 50;
