@@ -212,10 +212,10 @@ export class UsuarioService {
       `,
       [uid, idEvento]
     );
-    console.log(inscripcion);
     if (inscripcion.length > 0) {
-      throw new NotFoundException("El usuario ya se encuentra inscrito en este evento");
+      return ({ mensaje: "El usuario ya se encuentra inscrito en este evento" });
     }
+    return false
   }
 
   async findUserAnonimo() {
