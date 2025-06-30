@@ -316,5 +316,121 @@ export class EstadisticasItilService {
         return salida;
     }
 
+    async obtenerDatosAuditoria() {
+        const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+        const org = process.env.GITHUB_OWNER || 'GestionCursos';
+        const backendRepo = process.env.GITHUB_BACKEND_REPO || 'Back-End';
+        const frontendRepo = process.env.GITHUB_FRONTEND_REPO || 'Front-End';
+
+        try {
+            const solicitudes = await this.dataSource.query(`
+                SELECT
+                    s.id_solicitud AS "ID",
+                    s.apartado AS "Módulo",
+                    s.tipo_cambio AS "Tipo de Cambio",
+                    COALESCE(s.otro_tipo, '') AS "Otro Tipo",
+                    s.descripcion AS "Descripción",
+                    s.justificacion AS "Justificación",
+                    s.urgencia AS "Urgencia",
+                    s.estado AS "Estado",
+                    s."colaboradorGithubBackend" AS "Colab. Backend",
+                    s."colaboradorGithubFrontend" AS "Colab. Frontend",
+                    s."ramaBackend" AS "Rama Backend",
+                    s."ramaFrontend" AS "Rama Frontend",
+                    s.created_at AS "Fecha de Creación",
+                    CONCAT(u.nombres, ' ', u.apellidos) AS "Solicitado por",
+                    CONCAT(a.nombres, ' ', a.apellidos) AS "Aprobado por"
+                FROM
+                    public."Solicitudes" s
+                LEFT JOIN
+                    public."Usuarios" u ON u.uid_firebase = s.id_user
+                LEFT JOIN
+                    public."Usuarios" a ON a.uid_firebase = 'iz0H7ScDl4Zoo6bZ3Q2NwUQqjzu2'
+                ORDER BY
+                    s.created_at DESC;
+            `);
+
+            // Función para encontrar commits introducidos por una rama ya mergeada
+            const getMergedBranchCommits = async (branch: string, isFrontend: boolean): Promise<number> => {
+                const repo = isFrontend ? frontendRepo : backendRepo;
+
+                try {
+                    // Buscar los últimos 100 commits en develop
+                    const { data: developCommits } = await octokit.repos.listCommits({
+                        owner: org,
+                        repo,
+                        sha: 'develop',
+                        per_page: 100
+                    });
+
+                    // Buscar merge commit que mencione la rama
+                    const mergeCommit = developCommits.find(c =>
+                        c.commit.message.includes(`from GestionCursos/${branch}`)
+                    );
+
+                    if (!mergeCommit) {
+                        console.warn(`No se encontró merge commit para ${branch}`);
+                        return 0;
+                    }
+
+                    // Obtener el merge commit completo (para acceder a sus padres)
+                    const { data: fullMerge } = await octokit.repos.getCommit({
+                        owner: org,
+                        repo,
+                        ref: mergeCommit.sha
+                    });
+
+                    // Asegurar que haya dos padres (merge real)
+                    if (fullMerge.parents.length < 2) {
+                        console.warn(`Merge commit para ${branch} no tiene dos padres`);
+                        return 0;
+                    }
+
+                    const parentDevelop = fullMerge.parents[0].sha;
+                    const parentBranch = fullMerge.parents[1].sha;
+
+                    // Comparar commits introducidos por la rama en el merge
+                    const { data: comparison } = await octokit.repos.compareCommits({
+                        owner: org,
+                        repo,
+                        base: parentDevelop,
+                        head: mergeCommit.sha
+                    });
+
+                    return comparison.commits.length;
+                } catch (error) {
+                    console.error(`Error obteniendo commits de rama mergeada (${branch}):`, error.message);
+                    return 0;
+                }
+            };
+
+            const solicitudesConEstadisticas = await Promise.all(solicitudes.map(async s => {
+                const branchStats = {
+                    backendCommits: 0,
+                    frontendCommits: 0
+                };
+
+                if (s["Rama Backend"]) {
+                    branchStats.backendCommits = await getMergedBranchCommits(s["Rama Backend"], false);
+                }
+
+                if (s["Rama Frontend"]) {
+                    branchStats.frontendCommits = await getMergedBranchCommits(s["Rama Frontend"], true);
+                }
+
+                return {
+                    ...s,
+                    ...branchStats
+                };
+            }));
+
+            return solicitudesConEstadisticas;
+        } catch (error) {
+            return {
+                error: 'No se pudieron obtener los datos para la auditoría',
+                details: error.message
+            };
+        }
+    }
 
 }

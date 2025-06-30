@@ -34,4 +34,10 @@ export class EstadisticasItilController {
   getTipoCambio() {
     return this.estadisticasItilService.obtenerTiposCambios();
   }
+
+  @Get('branch-stats')
+  @Public()
+  getBranchStatistics() {
+    return this.estadisticasItilService.obtenerDatosAuditoria();
+  }
 }
