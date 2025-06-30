@@ -21,9 +21,10 @@ import { DetalleErrorModule } from './detalle-error/detalle-error.module';
 import { SolicitudModule } from './solicitud/solicitud.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { RegistroAprobacionModule } from './registro-aprobacion/registro-aprobacion.module';
+import { EstadisticasItilModule } from './estadisticas-itil/estadisticas-itil.module';
 
 @Module({
-  imports: [DatabaseModule, FirebaseModule, ContenidoHomeModule, AutoridadesModule, SeccionesModule, RequisitoModule, RequisitoEventoModule, RequisitoInscripcionModule, EventoModule, OrganizadorModule, NotaModule, CertificadoModule, UsuarioModule, InscripcionModule, AsistenciaModule,  FacultadModule, DetalleErrorModule, SolicitudModule,DashboardModule, RegistroAprobacionModule],
+  imports: [DatabaseModule, FirebaseModule, ContenidoHomeModule, AutoridadesModule, SeccionesModule, RequisitoModule, RequisitoEventoModule, RequisitoInscripcionModule, EventoModule, OrganizadorModule, NotaModule, CertificadoModule, UsuarioModule, InscripcionModule, AsistenciaModule,  FacultadModule, DetalleErrorModule, SolicitudModule,DashboardModule, RegistroAprobacionModule, EstadisticasItilModule],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -217,4 +217,10 @@ export class UsuarioService {
       throw new NotFoundException("El usuario ya se encuentra inscrito en este evento");
     }
   }
+
+  async findUserAnonimo() {
+    const user = await this.usuarioRepository.findOneBy({ correo: 'anonimo@gmail.com' });
+    if (!user) throw new NotFoundException('No se a encontrado el usuario');
+    return user;
+  }
 }
