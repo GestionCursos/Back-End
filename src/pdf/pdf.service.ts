@@ -86,10 +86,26 @@ export class PdfService {
       width: 300, align: 'center'
     });
 
-    // === QR Code ===
-    const qrData = `https://edu-events.pages.dev/pages/verificar?id_inscripcion=${data.inscripciones.id_inscripcion}`;
-    const qrBuffer = await QRCode.toBuffer(qrData, { type: 'png', margin: 1, width: 100 });
-    doc.image(qrBuffer, 50, doc.page.height - 150, { width: 100, height: 100 });
+// === Código QR y Firma ===
+const qrData = `https://edu-events.pages.dev/pages/verificar?id_inscripcion=${data.inscripciones.id_inscripcion}`;
+const qrImageBuffer = await QRCode.toBuffer(qrData, { type: 'png', margin: 1, width: 100 });
+
+const qrX = 50;
+const qrY = y + 80; // Puedes ajustar según el contenido anterior
+const qrSize = 100;
+doc.image(qrImageBuffer, qrX, qrY, { width: qrSize, height: qrSize });
+
+const signatureX = doc.page.width - 240;
+const signatureY = qrY; // O ajustar según diseño
+
+doc.moveTo(signatureX, signatureY).lineTo(signatureX + 180, signatureY).lineWidth(1).strokeColor('#9E1B32').stroke();
+
+doc.fillColor('#9E1B32').font('Helvetica-Oblique').fontSize(12)
+  .text('Responsable académico', signatureX + 40, signatureY + 10, { align: 'center' });
+
+doc.font('Helvetica').fontSize(10).fillColor('#999')
+  .text(`Ambato, Ecuador - ${new Date().toLocaleDateString()}`, signatureX + 10, signatureY + 30);
+
 
     // === Finalizar PDF ===
     doc.end();
