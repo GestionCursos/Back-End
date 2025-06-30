@@ -1,156 +1,115 @@
 import { Injectable } from '@nestjs/common';
 import * as PDFDocument from 'pdfkit';
-import { Response } from 'express';
 import fetch from 'node-fetch';
 import * as QRCode from 'qrcode';
 import { Writable } from 'stream';
+import * as path from 'path';
 
 @Injectable()
 export class PdfService {
   async generatePdf(data: any): Promise<Buffer> {
-    const imageUrl = `${process.env.URL_IMAGE_BANNER}`;
-    const doc = new PDFDocument({ size: 'A4', layout: 'landscape', margin: 40 });
+    const doc = new PDFDocument({ size: 'A4', layout: 'landscape', margin: 0 });
 
-    // Creamos un array para ir guardando los chunks del PDF
     const chunks: Uint8Array[] = [];
-
-    // Crear un writable stream para capturar el output del PDF en memoria
     const stream = new Writable({
       write(chunk, encoding, callback) {
         chunks.push(chunk);
         callback();
       }
     });
-
     doc.pipe(stream);
 
-    // Banner (imagen completa ancho, altura 80px)
-    const response = await fetch(imageUrl).then(res => res.blob());
-    const arrayBuffer = await response.arrayBuffer();
-    const imageBuffer = Buffer.from(arrayBuffer);
+    // === Registrar fuentes personalizadas ===
+    doc.registerFont('DancingScript-Italic', path.join(process.cwd(), 'src', 'pdf', 'fonts', 'DancingScript-Regular.ttf'));
+    doc.registerFont('DMSans-Regular', path.join(process.cwd(), 'src', 'pdf', 'fonts', 'DMSans_18pt-Regular.ttf'));
+    doc.registerFont('DMSans-Bold', path.join(process.cwd(), 'src', 'pdf', 'fonts', 'DMSans_18pt-Bold.ttf'));
 
-    doc.image(imageBuffer, 0, 0, { width: doc.page.width, height: 80 });
+    // === Fondo del certificado ===
+    const certImageUrl = "https://firebasestorage.googleapis.com/v0/b/portafolio-web-1cc28.firebasestorage.app/o/upload%2FCertificado%20de%20Reconocimiento%20Elegante%20Azul%20y%20blanco%20(1).png?alt=media&token=35a2cffb-3b07-4322-bacd-f3a07d0981af";
+    const response = await fetch(certImageUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch image: ${response.statusText}`);
+    }
+    const imageBuffer = Buffer.from(await response.arrayBuffer());
+    doc.image(imageBuffer, 0, 0, { width: doc.page.width, height: doc.page.height });
 
-    // Título sobre el banner con sombra
-    const title = `CERTIFICADO DE ${data.inscripciones.nota ? "APROBACION" : "PARTICIPACIÓN"} `;
-    const titleX = doc.page.width / 4;
-    const titleY = 90;
+    // === Nombre (Dancing Script, italic 36px) ===
+    doc.font('DancingScript-Italic').fontSize(30).fillColor('black');
+    doc.text(
+      data.inscripciones.nombres + ' ' + data.inscripciones.apellidos,
+      (doc.page.width / 2) - 100,
+      275,
+      { align: 'center' }
+    );
 
-    // Sombra (texto negro semitransparente con desplazamiento)
-    doc.font('Helvetica-Bold').fontSize(30).fillColor('rgba(0,0,0,0.3)');
-    doc.text(title, titleX + 2, titleY + 2, { align: 'center', width: 0, baseline: 'middle', lineBreak: false });
+    // === Mensaje multilínea (DM Sans, 16px) ===
+    const mensaje = `Por haber completado satisfactoriamente el Evento ${data.evento.nombre} en la modalidad ${data.evento.modalidad}`;
+    doc.font('DMSans-Regular').fontSize(16).fillColor('black');
 
-    // Texto principal en blanco sobre el banner
-    doc.fillColor('white');
-    doc.text(title, titleX, titleY, { align: 'center', width: 0, baseline: 'middle', lineBreak: false });
+    const maxWidth = 500;
+    const lineHeight = 28;
+    const x = (doc.page.width / 2) - 130;
+    let y = 330;
 
-    // Separador debajo del banner
-    doc.moveTo(40, 120).lineTo(doc.page.width - 40, 120).lineWidth(2).strokeColor('#9E1B32').stroke();
+    const dividirTextoEnLineas = (texto: string, anchoMax: number): string[] => {
+      const palabras = texto.split(' ');
+      const lineas: string[] = [];
+      let linea = '';
 
-    // Sección Datos del Evento - con fondo suave y borde redondeado
-    const eventBoxX = 50;
-    const eventBoxY = 140;
-    const boxWidth = (doc.page.width / 2) - 70;
-    const boxHeight = 170;
-    doc.roundedRect(eventBoxX, eventBoxY, boxWidth, boxHeight, 8).fillAndStroke('#FAF0F0', '#9E1B32');
+      for (const palabra of palabras) {
+        const testLinea = linea + palabra + ' ';
+        const ancho = doc.widthOfString(testLinea);
+        if (ancho > anchoMax) {
+          lineas.push(linea.trim());
+          linea = palabra + ' ';
+        } else {
+          linea = testLinea;
+        }
+      }
+      if (linea) lineas.push(linea.trim());
+      return lineas;
+    };
 
-    doc.fillColor('#9E1B32').font('Helvetica-Bold').fontSize(16).text('Detalles del Evento', eventBoxX + 15, eventBoxY + 15);
-
-    doc.font('Helvetica').fontSize(12).fillColor('#4D4D4D');
-    const evento = data.evento;
-    const detallesEvento = [
-      ['Nombre', evento.nombre],
-      ['Tipo', evento.seccionNombre],
-      ['Horas', evento.numeroHoras.toString()],
-      ['Modalidad', evento.modalidad],
-      ['Organizador', `${evento.organizadorNombre} (${evento.organizadorInstitucion})`],
-      ['Fecha', new Date().toLocaleDateString()],
-    ];
-
-    let evY = eventBoxY + 45;
-    detallesEvento.forEach(([label, val]) => {
-      doc.font('Helvetica-Bold').fillColor('#9E1B32').text(label + ':', eventBoxX + 20, evY);
-      doc.font('Helvetica').fillColor('#4D4D4D').text(val.toString(), eventBoxX + 110, evY);
-      evY += 18;
-    });
-
-    // Sección Datos del Participante - con fondo suave y borde redondeado
-    const studentBoxX = doc.page.width / 2 + 10;
-    const studentBoxY = eventBoxY;
-    doc.roundedRect(studentBoxX, studentBoxY, boxWidth, boxHeight, 8).fillAndStroke('#F7F7F7', '#9E1B32');
-
-    doc.fillColor('#9E1B32').font('Helvetica-Bold').fontSize(16).text('Datos del Participante', studentBoxX + 15, studentBoxY + 15);
-
-    doc.font('Helvetica').fontSize(12).fillColor('#4D4D4D');
-    const inscripcionData = data.inscripciones;
-    const nombreCompletoEstudiante = `${inscripcionData.nombres}  ${inscripcionData.apellidos}`;
-    let detallesEstudiante;
-    if (data.inscripciones.nota) {
-      detallesEstudiante = [
-        ['Nombre', nombreCompletoEstudiante],
-        ['Nota', inscripcionData.nota.toString()],
-      ];
-
-    } else {
-      detallesEstudiante = [
-        ['Nombre', nombreCompletoEstudiante],
-      ];
+    const lineas = dividirTextoEnLineas(mensaje, maxWidth);
+    for (const linea of lineas) {
+      doc.text(linea, x, y, { width: maxWidth, align: 'center' });
+      y += lineHeight;
     }
 
-    let stY = studentBoxY + 45;
-    detallesEstudiante.forEach(([label, val]) => {
-      doc.font('Helvetica-Bold').fillColor('#9E1B32').text(label + ':', studentBoxX + 20, stY);
-      doc.font('Helvetica').fillColor('#4D4D4D').text(val, studentBoxX + 110, stY);
-      stY += 18;
+    // === Fecha (DM Sans Bold, 16px, color dorado) ===
+    const fechaFormateada = new Date().toLocaleDateString('es-ES', {
+      day: 'numeric', month: 'long', year: 'numeric'
     });
 
-    // Frase de certificación en caja centrada
-    const certText = `Por medio del presente, se certifica que ${nombreCompletoEstudiante} ha ${inscripcionData.nota ? "aprobado" : "participado"}  exitosamente en el ${evento.seccionNombre} - "${evento.nombre}".`;
-    const certBoxWidth = doc.page.width - 100;
-    const certBoxHeight = 80;
-    const certBoxX = 50;
-    const certBoxY = eventBoxY + boxHeight + 30;
-
-    doc.roundedRect(certBoxX, certBoxY, certBoxWidth, certBoxHeight, 10).fillAndStroke('#FFF4F4', '#9E1B32');
-
-    doc.fillColor('#9E1B32').font('Helvetica-Oblique').fontSize(14);
-    doc.text(certText, certBoxX + 20, certBoxY + 20, {
-      width: certBoxWidth - 40,
-      align: 'center',
-      lineGap: 6
+    doc.font('DMSans-Bold').fontSize(16).fillColor('#ebbd25');
+    doc.text(fechaFormateada, (doc.page.width / 2), y + 50, {
+      width: 300, align: 'center'
     });
 
-    // Generar código QR con la URL o texto que desees (por ejemplo, info del certificado o link de validación)
-    const qrData = process.env.URL_VERIFICAR_CERTIFICADO + `?id_inscripcion=${data.inscripciones.id_inscripcion}`;
-    const qrImageBuffer = await QRCode.toBuffer(qrData, { type: 'png', margin: 1, width: 100 });
+// === Código QR y Firma ===
+const qrData = `https://edu-events.pages.dev/pages/verificar?id_inscripcion=${data.inscripciones.id_inscripcion}`;
+const qrImageBuffer = await QRCode.toBuffer(qrData, { type: 'png', margin: 1, width: 100 });
 
-    const qrX = 50;
-    const qrY = certBoxY + certBoxHeight + 30;
-    const qrSize = 100;
-    doc.image(qrImageBuffer, qrX, qrY, { width: qrSize, height: qrSize });
+const qrX = 50;
+const qrY = y + 80; // Puedes ajustar según el contenido anterior
+const qrSize = 100;
+doc.image(qrImageBuffer, qrX, qrY, { width: qrSize, height: qrSize });
+
+const signatureX = doc.page.width - 240;
+const signatureY = qrY; // O ajustar según diseño
+
+doc.moveTo(signatureX, signatureY).lineTo(signatureX + 180, signatureY).lineWidth(1).strokeColor('#9E1B32').stroke();
+
+doc.fillColor('#9E1B32').font('Helvetica-Oblique').fontSize(12)
+  .text('Responsable académico', signatureX + 40, signatureY + 10, { align: 'center' });
+
+doc.font('Helvetica').fontSize(10).fillColor('#999')
+  .text(`Ambato, Ecuador - ${new Date().toLocaleDateString()}`, signatureX + 10, signatureY + 30);
 
 
-    const signatureX = doc.page.width - 240;
-    const signatureY = certBoxY + certBoxHeight + 30;
-
-    doc.moveTo(signatureX, signatureY).lineTo(signatureX + 180, signatureY).lineWidth(1).strokeColor('#9E1B32').stroke();
-
-    doc.fillColor('#9E1B32').font('Helvetica-Oblique').fontSize(12)
-      .text('Responsable académico', signatureX + 40, signatureY + 10, { align: 'center' });
-
-    doc.font('Helvetica').fontSize(10).fillColor('#999')
-      .text(`Ambato, Ecuador - ${new Date().toLocaleDateString()}`, signatureX + 10, signatureY + 30);
-
+    // === Finalizar PDF ===
     doc.end();
-
-    // Esperar a que el stream termine de escribir
-    await new Promise<void>((resolve) => {
-      stream.on('finish', () => {
-        resolve();
-      });
-    });
-
-    // Concatenar todos los chunks en un único buffer
+    await new Promise<void>((resolve) => stream.on('finish', resolve));
     return Buffer.concat(chunks);
   }
 }

@@ -2,12 +2,14 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { DetalleErrorService } from './detalle-error.service';
 import { CreateDetalleErrorDto } from './dto/create-detalle-error.dto';
 import { UpdateDetalleErrorDto } from './dto/update-detalle-error.dto';
+import { Public } from 'src/guard/decorators/public.decorator';
 
 @Controller('detalle-error')
 export class DetalleErrorController {
   constructor(private readonly detalleErrorService: DetalleErrorService) {}
 
   @Post()
+  @Public()
   create(@Body() createDetalleErrorDto: CreateDetalleErrorDto) {
     return this.detalleErrorService.create(createDetalleErrorDto);
   }

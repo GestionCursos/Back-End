@@ -16,6 +16,12 @@ export class UsuarioController {
     const uid = req.userUid;
     return this.usuarioService.getDashboardData(uid);
   }
+  
+  @Get('firebase/:uid')
+  findOneByFirebaseUid(@Param('uid') uid: string) {
+    return this.usuarioService.findOne(uid);
+  }
+  
   @Get('evento/:id')
   findAll(@Param('id') id: number) {
     return this.usuarioService.findUsuariosPorEvento(id);

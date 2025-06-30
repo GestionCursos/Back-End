@@ -20,6 +20,13 @@ export class UsuarioService {
       throw new NotFoundException('Usuario no encontrado');
     }
 
+    console.log('Usuario encontrado:', {
+      uid: usuario.uid_firebase,
+      nombres: usuario.nombres,
+      idCarrera: usuario.idCarrera,
+      carreraNombre: usuario.idCarrera?.nombre
+    });
+
     // 3. Obtener eventos inscritos con detalle
     const eventosInscritos = await this.dataSource.query(
       `
@@ -126,11 +133,31 @@ export class UsuarioService {
   }
 
   async update(id: string, updateUsuarioDto: UpdateUsuarioDto) {
-    const upd = await this.usuarioRepository.update({ uid_firebase: id }, updateUsuarioDto);
-    if (!upd) {
-      throw new Error('Usuario not found');
+    // Primero buscar el usuario existente
+    const usuario = await this.usuarioRepository.findOne({ 
+      where: { uid_firebase: id }, 
+      relations: ['idCarrera'] 
+    });
+    
+    if (!usuario) {
+      throw new NotFoundException('Usuario no encontrado');
     }
-    return true;
+
+    // Si se está actualizando la carrera, buscar la nueva carrera
+    if (updateUsuarioDto.carrera) {
+      const nuevaCarrera = await this.carreraService.findByNombre(updateUsuarioDto.carrera);
+      if (nuevaCarrera) {
+        usuario.idCarrera = nuevaCarrera;
+      }
+      // Remover el campo carrera del DTO ya que no es una columna directa
+      const { carrera, ...restDto } = updateUsuarioDto;
+      Object.assign(usuario, restDto);
+    } else {
+      Object.assign(usuario, updateUsuarioDto);
+    }
+
+    const savedUsuario = await this.usuarioRepository.save(usuario);
+    return savedUsuario;
   }
 
   async remove(id: string) {
@@ -212,9 +239,15 @@ export class UsuarioService {
       `,
       [uid, idEvento]
     );
-    console.log(inscripcion);
     if (inscripcion.length > 0) {
-      throw new NotFoundException("El usuario ya se encuentra inscrito en este evento");
+      return ({ mensaje: "El usuario ya se encuentra inscrito en este evento" });
     }
+    return false
+  }
+
+  async findUserAnonimo() {
+    const user = await this.usuarioRepository.findOneBy({ correo: 'anonimo@gmail.com' });
+    if (!user) throw new NotFoundException('No se a encontrado el usuario');
+    return user;
   }
 }

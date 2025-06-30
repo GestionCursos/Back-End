@@ -130,7 +130,48 @@ export class EventoService {
     return evento;
   }
 
-  async update(id: number) {
+  async update(id: number, updateEventoDto: UpdateEventoDto) {
+    const eventoEncontrado = await this.eventoRepository.findOne({ 
+      where: { id_evento: id },
+      relations: ['requisitos', 'idOrganizador']
+    });
+    
+    if (!eventoEncontrado) {
+      throw new NotFoundException(`Evento con id ${id} no encontrado`);
+    }
+
+    // Verificar si el evento ya comenzó
+    const fechaInicio = new Date(eventoEncontrado.fechaInicio);
+    const ahora = new Date();
+    
+    if (fechaInicio <= ahora) {
+      throw new Error('No se puede editar un evento que ya ha comenzado');
+    }
+
+    // Actualizar las propiedades básicas
+    Object.assign(eventoEncontrado, updateEventoDto);
+
+    // Manejar relaciones si se proporcionan
+    if (updateEventoDto.requisitos) {
+      const requisitos = await this.requisitoService.findByIds(updateEventoDto.requisitos);
+      eventoEncontrado.requisitos = requisitos;
+    }
+
+    if (updateEventoDto.idSeccion) {
+      const seccion = await this.seccionesService.findOne(updateEventoDto.idSeccion);
+      eventoEncontrado.idSeccion = seccion;
+    }
+
+    if (updateEventoDto.idOrganizador) {
+      const organizador = await this.organizadorService.findOne(updateEventoDto.idOrganizador);
+      eventoEncontrado.idOrganizador = organizador;
+    }
+
+    const eventoActualizado = await this.eventoRepository.save(eventoEncontrado);
+    return eventoActualizado;
+  }
+
+  async finalizarEvento(id: number) {
     const eventoEncontrado = await this.eventoRepository.findOne({ where: { id_evento: id } });
     if (!eventoEncontrado) {
       throw new NotFoundException(`Evento con id ${id} no encontrado`);
@@ -138,7 +179,6 @@ export class EventoService {
 
     eventoEncontrado.estado = "Finalizado";
     await this.eventoRepository.save(eventoEncontrado);
-
   }
 
 

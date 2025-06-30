@@ -12,7 +12,10 @@ export class InscripcionController {
     return this.inscripcionService.create(createInscripcionDto, req.userUid);
   }
 
-
+  @Get('/inscrito/:id')
+  estaInscrito(@Param('id', ParseIntPipe) id_evento: number, @Request() req) {
+    return this.inscripcionService.validarInscripcion(req.userUid, id_evento);
+  }
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.inscripcionService.findOne(+id);
