@@ -10,6 +10,10 @@ import { RequisitoInscripcionService } from 'src/requisito_inscripcion/requisito
 
 @Injectable()
 export class InscripcionService {
+  async validarInscripcion(userUid: string, id_evento: number) {
+    const respuesta = await this.usuarioService.usuarioEstaInscritoEnEvento(userUid, id_evento);
+    return respuesta;
+  }
   constructor(
     @InjectRepository(Inscripcion)
     private readonly inscripcionRepository: Repository<Inscripcion>,
