@@ -8,6 +8,36 @@ import { EventoService } from 'src/evento/evento.service';
 
 @Injectable()
 export class CertificadoService {
+  async comprobar(id: number) {
+    try {
+      const datosUsuarioCertificado = await this.dataSource.query(
+        `
+        select
+          u.url_foto,
+          concat(u.nombres, ' ', u.apellidos) as nombre,
+          u.correo,
+          u.telefono,
+          e.nombre as Evento
+        from
+          "Usuarios" u
+        inner join "Inscripciones" i on
+          i.id_usuario = u.uid_firebase
+        inner join "Eventos" e on
+          e.id_evento = i.id_evento
+        inner join certificados c on
+          c.id_inscripcion = i.id_inscripcion
+        where
+          i.id_inscripcion = $1;
+      `,
+        [id]
+      );
+
+      return datosUsuarioCertificado[0] ?? null;
+    } catch (error) {
+      console.error('Error al comprobar certificado:', error);
+      throw new Error('No se pudo obtener el certificado');
+    }
+  }
   obtenerCertificadosPorIdUsuario(userUid: any) {
     const certificados = this.dataSource.query(`
       select
