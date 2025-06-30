@@ -34,4 +34,6 @@ export class Solicitud {
     ramaBackend?: string;
     @Column({ nullable: true })
     ramaFrontend?: string;
+    @Column({ nullable: true })
+    created_at?: string;
 }
