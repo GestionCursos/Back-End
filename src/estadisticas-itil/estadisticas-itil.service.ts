@@ -9,7 +9,6 @@ export class EstadisticasItilService {
         private readonly dataSource: DataSource,
     ) { }
     async obtenerDesarrolladores() {
-
         const data = await this.dataSource.query(`
     SELECT
         s."colaboradorGithubBackend",
@@ -28,21 +27,20 @@ export class EstadisticasItilService {
             let seguir = true;
 
             while (seguir) {
-                const { data } = await octokit.orgs.listMembers({
+                const { data: miembrosData } = await octokit.orgs.listMembers({
                     org,
                     per_page: 100,
                     page,
                 });
 
-                if (data.length === 0) {
+                if (miembrosData.length === 0) {
                     seguir = false;
                 } else {
-                    miembros.push(...data);
+                    miembros.push(...miembrosData);
                     page++;
                 }
             }
 
-            // Contar cuántos cambios hizo cada colaborador
             const contadorUsuarios: Record<string, number> = {};
             data.forEach(solicitud => {
                 const { colaboradorGithubBackend, colaboradorGithubFrontend } = solicitud;
@@ -56,16 +54,31 @@ export class EstadisticasItilService {
                 }
             });
 
-            // Crear array de tipo Usuario[]
-            const usuarios: Colaborador[] = miembros
-                .map(user => ({
-                    nombre: user.login,
-                    avatar: user.avatar_url,
-                    cambios: contadorUsuarios[user.login],
-                    aprobacion: 0, // Por definir
-                    especialidad: 'Desconocido', // Por definir
-                    tendencia: 'Estable' // Por definir
-                }));
+            // Función para asignar especialidad según el nombre
+            const obtenerEspecialidad = (nombre: string): string => {
+                switch (nombre) {
+                    case 'AdrianR0112':
+                    case 'Jaml888':
+                        return 'Frontend';
+                    case 'SteevenToala':
+                        return 'Fullstack';
+                    case 'Alexande6055':
+                        return 'Fullstack';
+                    case 'ALEXK230':
+                        return 'Backend';
+                    default:
+                        return 'Cliente/Asesor';
+                }
+            };
+
+            const usuarios: Colaborador[] = miembros.map(user => ({
+                nombre: user.login,
+                avatar: user.avatar_url,
+                cambios: contadorUsuarios[user.login] || 0,
+                aprobacion: 0, // Por definir
+                especialidad: obtenerEspecialidad(user.login),
+                tendencia: 'Estable' // Por definir
+            }));
 
             return { usuarios };
         } catch (error) {
@@ -74,7 +87,6 @@ export class EstadisticasItilService {
                 details: error.message
             };
         }
-
     }
 
     async obtenerCambiosRecientes() {
@@ -123,7 +135,7 @@ export class EstadisticasItilService {
                     tipo,
                     estado: s.estado,
                     prioridad: s.urgencia,
-                    fecha: s.created_at 
+                    fecha: s.created_at
                 };
             });
 
