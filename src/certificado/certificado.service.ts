@@ -79,7 +79,7 @@ export class CertificadoService {
 
       certificadosAInsertar.push(nuevoCertificado);
     }
-    await this.eventoService.update(idEvento)
+    await this.eventoService.finalizarEvento(idEvento);
 
     return await this.certificadoRepository.save(certificadosAInsertar);
   }
