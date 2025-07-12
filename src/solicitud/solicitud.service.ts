@@ -20,7 +20,7 @@ export class SolicitudService {
     if (userUid !== null && userUid !== undefined) {
       usuarioEncontrado = await this.usuarioService.findOne(userUid);
     } else if (createSolicitudDto.idUser) {
-      usuarioEncontrado = await this.usuarioService.findOne(createSolicitudDto.idUser);
+      usuarioEncontrado = await this.usuarioService.findUserAnonimo();
     }
     // Si no hay usuario, no incluir idUser en el objeto
     const baseSolicitud: any = { ...createSolicitudDto };
@@ -29,6 +29,7 @@ export class SolicitudService {
     } else {
       delete baseSolicitud.idUser;
     }
+    baseSolicitud.crecreated_at = new Date();
     const solicitudPreparada = this.solicitudRepository.create(baseSolicitud);
     const solicitudCreada = await this.solicitudRepository.save(solicitudPreparada);
     if (!solicitudCreada)

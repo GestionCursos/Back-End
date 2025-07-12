@@ -70,12 +70,13 @@ export class EventoService {
       .innerJoin('Inscripciones', 'inscripcion', 'inscripcion.evento = evento.id_evento')
       .where('evento.visible = :visible', { visible: true })
       .andWhere('(evento.nota_aprovacion IS NOT NULL OR evento.requiere_asistencia IS NOT NULL)')
-      .select(['evento.id_evento', 'evento.nombre'])
+      .select(['evento.id_evento', 'evento.nombre','evento.estado'])
       .groupBy('evento.id_evento')
       .getRawMany();
     return eventos.map(evento => ({
       id_evento: evento.evento_id_evento,
-      nombre: evento.evento_nombre
+      nombre: evento.evento_nombre,
+      estado: evento.evento_estado
     }));
   }
 

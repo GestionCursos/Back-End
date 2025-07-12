@@ -21,9 +21,9 @@ export class UsuarioController {
     return this.usuarioService.findUsuariosPorEvento(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUsuarioDto: UpdateUsuarioDto) {
-    return this.usuarioService.update(id, updateUsuarioDto);
+  @Patch()
+  update( @Body() updateUsuarioDto: UpdateUsuarioDto,@Request() req) {
+    return this.usuarioService.update(req.userUid, updateUsuarioDto);
   }
 
   @Delete(':id')

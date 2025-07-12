@@ -1,11 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res, NotFoundException, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, NotFoundException, Request, Param } from '@nestjs/common';
 import { CertificadoService } from './certificado.service';
-import { Public } from 'src/guard/decorators/public.decorator';
 import { CreateCertificadoDto } from './dto/create-certificado.dto';
 import { PdfService } from 'src/pdf/pdf.service';
-import { Response } from 'express';
 import { FirebaseService } from 'src/firebase/firebase.service';
-import { Inscripcion } from 'src/inscripcion/entities/inscripcion.entity';
+import { Public } from 'src/guard/decorators/public.decorator';
 
 @Controller('certificado')
 export class CertificadoController {
@@ -43,11 +41,17 @@ export class CertificadoController {
         url: publicUrl,
       });
     }
-    return this.certificadoService.createMasiveCertife(createCertificadoDto.idEvento,certificados);
+    return this.certificadoService.createMasiveCertife(createCertificadoDto.idEvento, certificados);
+  }
+
+  @Get('comprobar/:id')
+  @Public()
+  comprovarCertificado(@Param('id') id: number) {
+    return this.certificadoService.comprobar(id);
   }
 
   @Get()
-  async obtenerCertificadosPorIdUser(@Request() req) {
+  obtenerCertificadosPorIdUser(@Request() req) {
     return this.certificadoService.obtenerCertificadosPorIdUsuario(req.userUid);
   }
 

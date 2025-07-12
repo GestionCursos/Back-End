@@ -1,7 +1,7 @@
 import { Usuario } from "src/usuario/entities/usuario.entity";
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
- @Entity("Solicitudes")
+@Entity("Solicitudes")
 export class Solicitud {
     @PrimaryGeneratedColumn({ name: "id_solicitud" })
     idSolicitud: number;
@@ -22,8 +22,8 @@ export class Solicitud {
     urgencia?: string;
     @Column({ nullable: true })
     archivo?: string;
-    @Column({default:"Pendiente"})
-    estado?:string;
+    @Column({ default: "Pendiente" })
+    estado?: string;
     @Column({ nullable: true })
     colaboradorGithub?: string;
     @Column({ nullable: true })
@@ -34,4 +34,6 @@ export class Solicitud {
     ramaBackend?: string;
     @Column({ nullable: true })
     ramaFrontend?: string;
+    @Column({ nullable: true })
+    created_at?: string;
 }

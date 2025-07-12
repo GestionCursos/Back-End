@@ -10,6 +10,10 @@ import { RequisitoInscripcionService } from 'src/requisito_inscripcion/requisito
 
 @Injectable()
 export class InscripcionService {
+  async validarInscripcion(userUid: string, id_evento: number) {
+    const respuesta = await this.usuarioService.usuarioEstaInscritoEnEvento(userUid, id_evento);
+    return respuesta;
+  }
   constructor(
     @InjectRepository(Inscripcion)
     private readonly inscripcionRepository: Repository<Inscripcion>,
@@ -23,20 +27,29 @@ export class InscripcionService {
     const user = await this.usuarioService.findOne(uid_firebase);
     const evento = await this.eventoService.findOne(createInscripcionDto.evento);
 
-    // Verificación de inscripción existente
-    await this.usuarioService.usuarioEstaInscritoEnEvento(user.uid_firebase, evento.id_evento);
-
-      // Verificación de carrera
-      const carrerasEvento = evento.carreras.map(c => c.nombre);
-      if (!user.idCarrera || (carrerasEvento.length > 0 && !carrerasEvento.includes(user.idCarrera.nombre))) {
+    const permiso = await this.usuarioService.usuarioEstaInscritoEnEvento(user.uid_firebase, evento.id_evento);
+    if (typeof permiso !== "boolean") {
+      throw new NotFoundException(permiso.mensaje);
+    }
+    // Verificación de carrera
+    const carrerasEvento = evento.carreras.map(c => c.nombre);
+    if (carrerasEvento.length > 0 && user.idCarrera) {
+      if (carrerasEvento.includes(user.idCarrera.nombre)) {
         throw new NotFoundException("No tienes permitido inscribirte en este curso; no perteneces a la carrera del evento.");
       }
-
+    }
     // Validación de requisitos
     const requisitosMap = {
-      1: { field: 'urlCedulaPapeletaV', message: 'Falta el archivo de cédula - papeleta de votación.' },
+      1: { field: 'urlCedula', message: 'Falta el archivo de cédula.' },
       2: { field: 'urlComprobantePago', message: 'Falta el archivo de comprobante de pago.' },
-      3: { field: 'cartaMotivacion', message: 'Falta el archivo de carta de motivación.' },
+      3: { field: 'urlCartaMotivacion', message: 'Falta el archivo de carta de motivación.' },
+      4: { field: 'urlPapeletaV', message: 'Falta el archivo de carta de papeleta de votacion.' },
+      5: { field: 'urlCartaMotivacion', message: 'Falta el archivo de carta de motivación.' },
+      6: { field: 'urlTituloBachiller', message: 'Falta el archivo de l titulo Bachiller.' },
+      7: { field: 'urlFotoCarnet', message: 'Falta el archivo de fto tamaño carnet.' },
+      8: { field: 'urlFormulario', message: 'Falta el archivo del formulario de inscripcion.' },
+      9: { field: 'urlResidencia', message: 'Falta el archivo de residencia.' },
+      10: { field: 'urlcurriculum', message: 'Falta el archivo del curriculum del usuario.' },
     };
 
     let errores: string[] = [];

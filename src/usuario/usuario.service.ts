@@ -126,11 +126,24 @@ export class UsuarioService {
   }
 
   async update(id: string, updateUsuarioDto: UpdateUsuarioDto) {
-    const upd = await this.usuarioRepository.update({ uid_firebase: id }, updateUsuarioDto);
-    if (!upd) {
-      throw new Error('Usuario not found');
+    const usuario = await this.findOne(id);
+    // Actualizar los campos simples si están presentes
+    if (updateUsuarioDto.nombres !== undefined) usuario.nombres = updateUsuarioDto.nombres;
+    if (updateUsuarioDto.apellidos !== undefined) usuario.apellidos = updateUsuarioDto.apellidos;
+    if (updateUsuarioDto.correo !== undefined) usuario.correo = updateUsuarioDto.correo;
+    if (updateUsuarioDto.telefono !== undefined) usuario.telefono = updateUsuarioDto.telefono;
+    if (updateUsuarioDto.direccion !== undefined) usuario.direccion = updateUsuarioDto.direccion;
+    if (updateUsuarioDto.rol !== undefined) usuario.rol = updateUsuarioDto.rol;
+    if (updateUsuarioDto.estado !== undefined) usuario.estado = updateUsuarioDto.estado;
+    if (updateUsuarioDto.url_foto !== undefined) usuario.url_foto = updateUsuarioDto.url_foto;
+
+    if (updateUsuarioDto.carrera) {
+      const carrera = await this.carreraService.findByNombre(updateUsuarioDto.carrera);
+      if (!carrera) throw new NotFoundException('No se encontro la carrera a la que pertenece el usuario')
+      usuario.idCarrera = carrera;
     }
-    return true;
+    await this.usuarioRepository.save(usuario);
+    return usuario;
   }
 
   async remove(id: string) {
@@ -212,9 +225,15 @@ export class UsuarioService {
       `,
       [uid, idEvento]
     );
-    console.log(inscripcion);
     if (inscripcion.length > 0) {
-      throw new NotFoundException("El usuario ya se encuentra inscrito en este evento");
+      return ({ mensaje: "El usuario ya se encuentra inscrito en este evento" });
     }
+    return false
+  }
+  
+  async findUserAnonimo() {
+    const user = await this.usuarioRepository.findOneBy({ correo: 'anonimo@gmail.com' });
+    if (!user) throw new NotFoundException('No se a encontrado el usuario');
+    return user;
   }
 }

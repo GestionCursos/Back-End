@@ -9,8 +9,26 @@ export class CreateInscripcionDto {
     urlComprobantePago: string;
     @IsString()
     @IsOptional()
-    urlCedulaPapeletaV: string;
+    urlCedula: string;
     @IsString()
     @IsOptional()
-    cartaMotivacion: string;
+    urlPapeletaV: string;
+    @IsString()
+    @IsOptional()
+    urlCartaMotivacion: string;
+    @IsString()
+    @IsOptional()
+    urlTituloBachiller: string;
+    @IsString()
+    @IsOptional()
+    urlFotoCarnet: string;
+    @IsString()
+    @IsOptional()
+    urlFormulario: string;
+    @IsString()
+    @IsOptional()
+    urlResidencia: string;
+    @IsString()
+    @IsOptional()
+    urlcurriculum: string;
 }
